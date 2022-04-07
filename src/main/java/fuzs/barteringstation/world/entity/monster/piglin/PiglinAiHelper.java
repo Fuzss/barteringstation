@@ -10,7 +10,7 @@ import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.item.ItemStack;
 
-public class ModPiglinAi extends PiglinAi {
+public class PiglinAiHelper extends PiglinAi {
     public static boolean mobInteract(Piglin piglin, ItemStack stack, BlockPos source) {
         if (canAdmire(piglin, stack)) {
             ItemStack currencyStack = stack.split(1);

@@ -1,0 +1,5 @@
+127de2083f68d70a4ef80d90696462dbca108b17 assets/barteringstation/lang/en_us.json
+34292e4d1a27a06fff5ca100a016f84fd23db293 data/barteringstation/loot_tables/blocks/bartering_station.json
+e553abfb0444a26392b9989b7b93612a8b8af8aa data/minecraft/advancements/recipes/decorations/smithing_table.json
+0f52f9f7f0653ee4acc56b58cafd229b823b60f1 data/minecraft/recipes/smithing_table.json
+e34f5c408d20596898341ea69b219089133c1e8a data/minecraft/tags/blocks/mineable/axe.json

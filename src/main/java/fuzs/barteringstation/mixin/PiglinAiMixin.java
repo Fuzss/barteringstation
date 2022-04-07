@@ -24,15 +24,15 @@ public abstract class PiglinAiMixin {
         if (optional.isPresent() && optional.map(BarteringStationCapability::hasBarteringStationPos).orElseThrow()) {
             BarteringStationCapability capability = optional.orElseThrow(IllegalStateException::new);
             BlockPos pos = capability.getBarteringStationPos();
+            capability.clearBarteringStationPos();
             piglin.level.getBlockEntity(pos, ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.get()).ifPresent(blockEntity -> {
                 List<ItemStack> items = getBarterResponseItems(piglin);
                 items.removeIf(blockEntity::placeBarterResponseItem);
                 if (!items.isEmpty()) {
                     throwItems(piglin, items);
                 }
+                callbackInfo.cancel();
             });
-            capability.clearBarteringStationPos();
-            callbackInfo.cancel();
         }
     }
 

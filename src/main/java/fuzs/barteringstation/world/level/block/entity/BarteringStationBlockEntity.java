@@ -2,11 +2,14 @@ package fuzs.barteringstation.world.level.block.entity;
 
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.world.entity.monster.piglin.PiglinAiHelper;
+import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -15,7 +18,6 @@ import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -23,39 +25,50 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
-    private static final int TOTAL_SLOTS = 21;
-    private static final int CURRENCY_SLOTS = 6;
-    private static final int BARTERING_COOLDOWN = 40;
+    public static final int ALL_SLOTS = 21;
+    public static final int CURRENCY_SLOTS = 6;
+    public static final int DATA_SLOTS = 2;
+    public static final int BARTER_COOLDOWN = 80;
     private static final int[] SLOTS_FOR_INPUT = IntStream.range(0, CURRENCY_SLOTS).toArray();
-    private static final int[] SLOTS_FOR_OUTPUT = IntStream.range(CURRENCY_SLOTS, TOTAL_SLOTS).toArray();
-
+    private static final int[] SLOTS_FOR_OUTPUT = IntStream.range(CURRENCY_SLOTS, ALL_SLOTS).toArray();
     private final ContainerData dataAccess = new ContainerData() {
 
         @Override
         public int get(int id) {
-            return id == 0 ? BarteringStationBlockEntity.this.cooldown : 0;
+            return switch (id) {
+                case 0 -> BarteringStationBlockEntity.this.barterCooldown;
+                case 1 -> BarteringStationBlockEntity.this.localPiglins;
+                default -> 0;
+            };
         }
 
         @Override
         public void set(int id, int data) {
-            if (id == 0) {
-                BarteringStationBlockEntity.this.cooldown = data;
+            switch (id) {
+                case 0 -> BarteringStationBlockEntity.this.barterCooldown = data;
+                case 1 -> BarteringStationBlockEntity.this.localPiglins = data;
             }
         }
 
         @Override
         public int getCount() {
-            return 1;
+            return DATA_SLOTS;
         }
     };
-    private NonNullList<ItemStack> items = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
-    private int cooldown;
+    private NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
+    private int barterCooldown;
+    private int localPiglins;
+    LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN);
 
     public int time;
     public float open;
@@ -73,14 +86,14 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         super.load(tag);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, this.items);
-        this.cooldown = tag.getInt("BarterCooldown");
+        this.barterCooldown = tag.getInt("BarterCooldown");
 
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        tag.putInt("BarterCooldown", this.cooldown);
+        tag.putInt("BarterCooldown", this.barterCooldown);
         ContainerHelper.saveAllItems(tag, this.items);
     }
 
@@ -124,11 +137,29 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
-        if (level.getGameTime() % BARTERING_COOLDOWN == 0) {
+        if (blockEntity.barterCooldown > 0) {
+            blockEntity.barterCooldown--;
+        }
+        if (blockEntity.barterCooldown == 0) {
             Vec3 blockCenterPos = Vec3.atCenterOf(pos);
             final int horizontalRange = BarteringStation.CONFIG.server().horizontalRange;
             final int verticalRange = BarteringStation.CONFIG.server().verticalRange;
             List<Piglin> piglins = level.getEntitiesOfClass(Piglin.class, new AABB(blockCenterPos.add(-horizontalRange, -verticalRange, -horizontalRange), blockCenterPos.add(horizontalRange, verticalRange, horizontalRange)), AbstractPiglin::isAdult);
+            blockEntity.localPiglins = piglins.size();
+            int piglinIndex = 0;
+            for (int i = 0; i < CURRENCY_SLOTS; i++) {
+                ItemStack stack = blockEntity.getItem(i);
+                if (!stack.isEmpty()) {
+                    while (true) {
+                        boolean outOfBounds = piglinIndex >= piglins.size();
+                        if (outOfBounds || PiglinAiHelper.mobInteract(piglins.get(piglinIndex++), stack, blockEntity.worldPosition))
+                            if (!outOfBounds) {
+                                blockEntity.barterCooldown = BARTER_COOLDOWN;
+                            }
+                            break;
+                    }
+                }
+            }
         }
     }
 
@@ -152,12 +183,12 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     @Override
     protected Component getDefaultName() {
-        return null;
+        return new TranslatableComponent("container.barteringstation.bartering_station");
     }
 
     @Override
     protected AbstractContainerMenu createMenu(int id, Inventory inventory) {
-        return new BrewingStandMenu(id, inventory, this, this.dataAccess);
+        return new BarteringStationMenu(id, inventory, this, this.dataAccess);
     }
 
     @Override
@@ -232,8 +263,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
                     if (stack.isEmpty()) {
                         return true;
                     }
-                    continue;
                 }
+                continue;
             }
             return false;
         }
@@ -266,5 +297,30 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         int transferAmount = stack.getMaxStackSize() - stackInSlot.getCount();
         stackInSlot.grow(transferAmount);
         stack.shrink(transferAmount);
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
+        if (!this.remove && facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            if (facing == Direction.DOWN) {
+                return this.handlers[1].cast();
+            } else
+                return this.handlers[0].cast();
+        }
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        for (LazyOptional<? extends IItemHandler> handler : this.handlers) {
+            handler.invalidate();
+        }
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+        this.handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN);
     }
 }

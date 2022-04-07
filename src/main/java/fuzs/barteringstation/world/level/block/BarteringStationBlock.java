@@ -3,10 +3,13 @@ package fuzs.barteringstation.world.level.block;
 import fuzs.barteringstation.registry.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -37,9 +40,10 @@ public class BarteringStationBlock extends BaseEntityBlock {
         return new BarteringStationBlockEntity(pPos, pState);
     }
 
+    @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        return pLevel.isClientSide ? createTickerHelper(pBlockEntityType, ModRegistry. BARTERING_STATION_BLOCK_ENTITY_TYPE.get(), BarteringStationBlockEntity::clientTick) : null;
+        return createTickerHelper(pBlockEntityType, ModRegistry. BARTERING_STATION_BLOCK_ENTITY_TYPE.get(), pLevel.isClientSide ? BarteringStationBlockEntity::clientTick : BarteringStationBlockEntity::serverTick);
     }
 
     @Override
@@ -62,6 +66,32 @@ public class BarteringStationBlock extends BaseEntityBlock {
                 blockEntity.setCustomName(stack.getHoverName());
             }
         }
+    }
+
+    @Override
+    public void onRemove(BlockState p_48713_, Level p_48714_, BlockPos p_48715_, BlockState p_48716_, boolean p_48717_) {
+        if (!p_48713_.is(p_48716_.getBlock())) {
+            BlockEntity blockentity = p_48714_.getBlockEntity(p_48715_);
+            if (blockentity instanceof BarteringStationBlockEntity) {
+                if (p_48714_ instanceof ServerLevel) {
+                    Containers.dropContents(p_48714_, p_48715_, (BarteringStationBlockEntity)blockentity);
+                }
+
+                p_48714_.updateNeighbourForOutputSignal(p_48715_, this);
+            }
+
+            super.onRemove(p_48713_, p_48714_, p_48715_, p_48716_, p_48717_);
+        }
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState p_48700_) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState p_48702_, Level p_48703_, BlockPos p_48704_) {
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(p_48703_.getBlockEntity(p_48704_));
     }
 
     @Override

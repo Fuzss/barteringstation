@@ -1,5 +1,5 @@
 {
     "variants": {
-        "": { "model": "block/bartering_station" }
+        "": { "model": "barteringstation:block/bartering_station" }
     }
 }

@@ -1,12 +1,12 @@
 {
-    "parent": "block/cube",
+    "parent": "minecraft:block/cube",
     "textures": {
-        "particle": "block/bartering_station_front",
-        "down": "block/crimson_planks",
-        "up": "block/bartering_station_top",
-        "north": "block/bartering_station_front",
-        "east": "block/bartering_station_side",
-        "south": "block/bartering_station_side",
-        "west": "block/bartering_station_front"
+        "particle": "barteringstation:block/bartering_station_front",
+        "down": "minecraft:block/crimson_planks",
+        "up": "barteringstation:block/bartering_station_top",
+        "north": "barteringstation:block/bartering_station_front",
+        "east": "barteringstation:block/bartering_station_side",
+        "south": "barteringstation:block/bartering_station_side",
+        "west": "barteringstation:block/bartering_station_front"
     }
 }
