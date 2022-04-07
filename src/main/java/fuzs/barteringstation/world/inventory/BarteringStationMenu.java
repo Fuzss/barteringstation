@@ -1,5 +1,6 @@
 package fuzs.barteringstation.world.inventory;
 
+import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
 import fuzs.barteringstation.registry.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.util.Mth;
@@ -102,12 +103,12 @@ public class BarteringStationMenu extends AbstractContainerMenu {
         return itemstack;
     }
 
-    public float getArrow1Progress() {
-        return Mth.clamp((this.data.get(0) * 2.0F) / BarteringStationBlockEntity.BARTER_COOLDOWN, 0.0F, 1.0F);
+    public int getArrow1Progress() {
+        return Mth.clamp((this.data.get(0) * 2 * BarteringStationScreen.ARROW_SIZE_X) / BarteringStationBlockEntity.BARTER_COOLDOWN, 0, BarteringStationScreen.ARROW_SIZE_X);
     }
 
-    public float getArrow2Progress() {
-        return Mth.clamp((this.data.get(0) * 2.0F) / BarteringStationBlockEntity.BARTER_COOLDOWN - 1.0F, 0.0F, 1.0F);
+    public int getArrow2Progress() {
+        return Mth.clamp((this.data.get(0) * 2 * BarteringStationScreen.ARROW_SIZE_X) / BarteringStationBlockEntity.BARTER_COOLDOWN - BarteringStationScreen.ARROW_SIZE_X, 0, BarteringStationScreen.ARROW_SIZE_X);
     }
 
     public float getCooldownProgress() {

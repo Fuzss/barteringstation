@@ -1,12 +1,12 @@
 package fuzs.barteringstation;
 
+import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.config.ServerConfig;
 import fuzs.barteringstation.data.ModBlockTagsProvider;
 import fuzs.barteringstation.data.ModLanguageProvider;
 import fuzs.barteringstation.data.ModLootTableProvider;
 import fuzs.barteringstation.data.ModRecipeProvider;
 import fuzs.barteringstation.registry.ModRegistry;
-import fuzs.puzzleslib.config.AbstractConfig;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.config.ConfigHolderImpl;
 import net.minecraft.data.DataGenerator;
@@ -26,7 +26,7 @@ public class BarteringStation {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     @SuppressWarnings("Convert2MethodRef")
-    public static final ConfigHolder<AbstractConfig, ServerConfig> CONFIG = ConfigHolder.server(() -> new ServerConfig());
+    public static final ConfigHolder<ClientConfig, ServerConfig> CONFIG = ConfigHolder.of(() -> new ClientConfig(), () -> new ServerConfig());
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {

@@ -32,7 +32,9 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
     public void render(PoseStack p_97858_, int p_97859_, int p_97860_, float p_97861_) {
         this.renderBackground(p_97858_);
         super.render(p_97858_, p_97859_, p_97860_, p_97861_);
-        this.renderCooldownOverlays();
+        if (BarteringStation.CONFIG.client().cooldownRenderType.overlay()) {
+            this.renderCooldownOverlays();
+        }
         this.renderTooltip(p_97858_, p_97859_, p_97860_);
     }
 
@@ -41,17 +43,17 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, BARTERING_STATION_LOCATION);
-        int leftPos = this.leftPos;
-        int topPos = this.topPos;
-        this.blit(poseStack, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
-        this.renderBgCooldownArrows(poseStack, leftPos, topPos);
+        this.blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        if (BarteringStation.CONFIG.client().cooldownRenderType.arrows()) {
+            this.renderBgCooldownArrows(poseStack);
+        }
     }
 
-    private void renderBgCooldownArrows(PoseStack poseStack, int leftPos, int topPos) {
-        int arrow1Progress = (int) (this.menu.getArrow1Progress() * ARROW_SIZE_X);
-        this.blit(poseStack, leftPos + 49, topPos + 40, 176, 0, arrow1Progress, ARROW_SIZE_Y);
-        int arrow2Progress = (int) (this.menu.getArrow2Progress() * ARROW_SIZE_X);
-        this.blit(poseStack, leftPos + 49 + ARROW_SIZE_X - arrow2Progress, topPos + 53, 176 + ARROW_SIZE_X - arrow2Progress, ARROW_SIZE_Y, arrow2Progress, ARROW_SIZE_Y);
+    private void renderBgCooldownArrows(PoseStack poseStack) {
+        int arrow1Progress = this.menu.getArrow1Progress();
+        this.blit(poseStack, this.leftPos + 49, this.topPos + 40, 176, 0, arrow1Progress, ARROW_SIZE_Y);
+        int arrow2Progress = this.menu.getArrow2Progress();
+        this.blit(poseStack, this.leftPos + 49 + ARROW_SIZE_X - arrow2Progress, this.topPos + 53, 176 + ARROW_SIZE_X - arrow2Progress, ARROW_SIZE_Y, arrow2Progress, ARROW_SIZE_Y);
     }
 
     private void renderCooldownOverlays() {

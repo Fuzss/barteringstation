@@ -44,6 +44,7 @@ public class ModLootTableProvider extends LootTableProvider {
         @Override
         protected void addTables() {
             this.dropSelf(ModRegistry.BARTERING_STATION_BLOCK.get());
+            this.dropSelf(ModRegistry.PIGLIN_HEAD_BLOCK.get());
         }
 
         @Override
