@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "particle": "block/bartering_station_front",
+        "down": "block/crimson_planks",
+        "up": "block/bartering_station_top",
+        "north": "block/bartering_station_front",
+        "east": "block/bartering_station_side",
+        "south": "block/bartering_station_side",
+        "west": "block/bartering_station_front"
+    }
+}
