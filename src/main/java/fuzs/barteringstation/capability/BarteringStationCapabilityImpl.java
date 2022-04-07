@@ -18,17 +18,17 @@ public class BarteringStationCapabilityImpl implements BarteringStationCapabilit
 
     @Override
     public void write(CompoundTag tag) {
-        if (tag.contains("BarteringStationX", 99) && tag.contains("BarteringStationY", 99) && tag.contains("BarteringStationZ", 99)) {
-            this.barteringStation = new BlockPos(tag.getInt("BarteringStationX"), tag.getInt("BarteringStationY"), tag.getInt("BarteringStationZ"));
+        if (this.hasBarteringStationPos()) {
+            tag.putInt("BarteringStationX", this.barteringStation.getX());
+            tag.putInt("BarteringStationY", this.barteringStation.getY());
+            tag.putInt("BarteringStationZ", this.barteringStation.getZ());
         }
     }
 
     @Override
     public void read(CompoundTag tag) {
-        if (this.hasBarteringStationPos()) {
-            tag.putInt("BarteringStationX", this.barteringStation.getX());
-            tag.putInt("BarteringStationY", this.barteringStation.getY());
-            tag.putInt("BarteringStationZ", this.barteringStation.getZ());
+        if (tag.contains("BarteringStationX", 99) && tag.contains("BarteringStationY", 99) && tag.contains("BarteringStationZ", 99)) {
+            this.barteringStation = new BlockPos(tag.getInt("BarteringStationX"), tag.getInt("BarteringStationY"), tag.getInt("BarteringStationZ"));
         }
     }
 }

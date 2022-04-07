@@ -3,6 +3,7 @@ package fuzs.barteringstation.mixin;
 import fuzs.barteringstation.capability.BarteringStationCapability;
 import fuzs.barteringstation.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +31,8 @@ public abstract class PiglinAiMixin {
                 items.removeIf(blockEntity::placeBarterResponseItem);
                 if (!items.isEmpty()) {
                     throwItems(piglin, items);
+                } else {
+                    piglin.swing(InteractionHand.OFF_HAND);
                 }
                 callbackInfo.cancel();
             });

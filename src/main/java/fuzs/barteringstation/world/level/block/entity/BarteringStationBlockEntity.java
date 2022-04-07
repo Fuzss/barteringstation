@@ -38,7 +38,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     public static final int ALL_SLOTS = 21;
     public static final int CURRENCY_SLOTS = 6;
     public static final int DATA_SLOTS = 2;
-    public static final int BARTER_COOLDOWN = 80;
+    public static final int BARTER_COOLDOWN = 400;
     private static final int[] SLOTS_FOR_INPUT = IntStream.range(0, CURRENCY_SLOTS).toArray();
     private static final int[] SLOTS_FOR_OUTPUT = IntStream.range(CURRENCY_SLOTS, ALL_SLOTS).toArray();
     private final ContainerData dataAccess = new ContainerData() {
@@ -66,7 +66,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         }
     };
     private NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
-    private int barterCooldown;
+    private int barterCooldown = -1;
     private int localPiglins;
     LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN);
 
@@ -93,8 +93,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        tag.putInt("BarterCooldown", this.barterCooldown);
         ContainerHelper.saveAllItems(tag, this.items);
+        tag.putInt("BarterCooldown", this.barterCooldown);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
@@ -137,26 +137,34 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
-        if (blockEntity.barterCooldown > 0) {
-            blockEntity.barterCooldown--;
+        if (blockEntity.barterCooldown >= 0) {
+            if (blockEntity.barterCooldown >= BARTER_COOLDOWN) {
+                blockEntity.barterCooldown = -1;
+            } else {
+                blockEntity.barterCooldown++;
+            }
         }
-        if (blockEntity.barterCooldown == 0) {
+        if (level.getGameTime() % BARTER_COOLDOWN == 0) {
             Vec3 blockCenterPos = Vec3.atCenterOf(pos);
             final int horizontalRange = BarteringStation.CONFIG.server().horizontalRange;
             final int verticalRange = BarteringStation.CONFIG.server().verticalRange;
             List<Piglin> piglins = level.getEntitiesOfClass(Piglin.class, new AABB(blockCenterPos.add(-horizontalRange, -verticalRange, -horizontalRange), blockCenterPos.add(horizontalRange, verticalRange, horizontalRange)), AbstractPiglin::isAdult);
+            // always update this
             blockEntity.localPiglins = piglins.size();
-            int piglinIndex = 0;
-            for (int i = 0; i < CURRENCY_SLOTS; i++) {
-                ItemStack stack = blockEntity.getItem(i);
-                if (!stack.isEmpty()) {
-                    while (true) {
-                        boolean outOfBounds = piglinIndex >= piglins.size();
-                        if (outOfBounds || PiglinAiHelper.mobInteract(piglins.get(piglinIndex++), stack, blockEntity.worldPosition))
-                            if (!outOfBounds) {
-                                blockEntity.barterCooldown = BARTER_COOLDOWN;
-                            }
+            // stop giving out gold when not slots are available
+            if (blockEntity.getFreeSlot() != -1) {
+                int piglinIndex = 0;
+                for (int i = 0; i < CURRENCY_SLOTS; i++) {
+                    ItemStack stack = blockEntity.getItem(i);
+                    if (!stack.isEmpty()) {
+                        while (true) {
+                            boolean outOfBounds = piglinIndex >= piglins.size();
+                            if (outOfBounds || PiglinAiHelper.mobInteract(piglins.get(piglinIndex++), stack, blockEntity.worldPosition))
+                                if (!outOfBounds) {
+                                    blockEntity.barterCooldown = 0;
+                                }
                             break;
+                        }
                     }
                 }
             }
@@ -253,50 +261,61 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     public boolean placeBarterResponseItem(ItemStack stack) {
         while (true) {
             if (!stack.isEmpty()) {
-                int slot = -1;
-                slot = this.getSlotWithRemainingSpace(stack, slot);
+                int slot = this.getSlotWithRemainingSpace(stack);
                 if (slot == -1) {
-                    slot = this.getFreeSlot(slot);
+                    slot = this.getFreeSlot();
                 }
                 if (slot != -1) {
                     this.transferStackInSlot(stack, slot);
                     if (stack.isEmpty()) {
                         return true;
                     }
+                    continue;
                 }
-                continue;
             }
             return false;
         }
     }
 
-    private int getSlotWithRemainingSpace(ItemStack stack, int slot) {
+    private int getSlotWithRemainingSpace(ItemStack stack) {
         for (int i = CURRENCY_SLOTS; i < this.getContainerSize(); i++) {
             if (this.hasRemainingSpaceForItem(this.getItem(i), stack)) {
-                slot = i;
+                return i;
             }
         }
-        return slot;
+        return -1;
     }
 
     private boolean hasRemainingSpaceForItem(ItemStack stack1, ItemStack stack2) {
         return !stack1.isEmpty() && ItemStack.isSameItemSameTags(stack1, stack2) && stack1.isStackable() && stack1.getCount() < stack1.getMaxStackSize() && stack1.getCount() < this.getMaxStackSize();
     }
 
-    private int getFreeSlot(int slot) {
+    private int getFreeSlot() {
         for (int i = CURRENCY_SLOTS; i < this.getContainerSize(); i++) {
             if (this.getItem(i).isEmpty()) {
-                slot = i;
+                return i;
             }
         }
-        return slot;
+        return -1;
     }
 
     private void transferStackInSlot(ItemStack stack, int slot) {
-        ItemStack stackInSlot = this.getItem(slot).copy();
-        int transferAmount = stack.getMaxStackSize() - stackInSlot.getCount();
-        stackInSlot.grow(transferAmount);
-        stack.shrink(transferAmount);
+        ItemStack stackInSlot = this.getItem(slot);
+        if (stackInSlot.isEmpty()) {
+            ItemStack stackToInsert = stack.copy();
+            stack.setCount(0);
+            if (stack.hasTag()) {
+                stackToInsert.setTag(stack.getTag().copy());
+            }
+            this.setItem(slot, stackToInsert);
+        } else {
+            ItemStack stackToInsert = stackInSlot.copy();
+            int transferAmount = stack.getCount();
+            transferAmount = Math.min(transferAmount, stackToInsert.getMaxStackSize() - stackToInsert.getCount());
+            stackToInsert.grow(transferAmount);
+            stack.shrink(transferAmount);
+            this.setItem(slot, stackToInsert);
+        }
     }
 
     @Override

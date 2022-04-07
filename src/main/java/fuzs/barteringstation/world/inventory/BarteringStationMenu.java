@@ -2,6 +2,7 @@ package fuzs.barteringstation.world.inventory;
 
 import fuzs.barteringstation.registry.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -102,11 +103,19 @@ public class BarteringStationMenu extends AbstractContainerMenu {
     }
 
     public float getArrow1Progress() {
-        return Math.min((BarteringStationBlockEntity.BARTER_COOLDOWN - this.data.get(0)) / (BarteringStationBlockEntity.BARTER_COOLDOWN / 2.0F), 1.0F);
+        return Mth.clamp((this.data.get(0) * 2.0F) / BarteringStationBlockEntity.BARTER_COOLDOWN, 0.0F, 1.0F);
     }
 
     public float getArrow2Progress() {
-        return Math.min(this.data.get(0) / (BarteringStationBlockEntity.BARTER_COOLDOWN / 2.0F), 1.0F);
+        return Mth.clamp((this.data.get(0) * 2.0F) / BarteringStationBlockEntity.BARTER_COOLDOWN - 1.0F, 0.0F, 1.0F);
+    }
+
+    public float getCooldownProgress() {
+        int cooldown = this.data.get(0);
+        if (cooldown == -1) {
+            return -1;
+        }
+        return (BarteringStationBlockEntity.BARTER_COOLDOWN - this.data.get(0)) / (float) BarteringStationBlockEntity.BARTER_COOLDOWN;
     }
 
     public int getLocalPiglins() {
