@@ -97,10 +97,10 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
     private void fillRect(BufferBuilder p_115153_, int p_115154_, int p_115155_, int p_115156_, int p_115157_, int p_115158_, int p_115159_, int p_115160_, int p_115161_) {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         p_115153_.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        p_115153_.vertex((double)(p_115154_ + 0), (double)(p_115155_ + 0), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        p_115153_.vertex((double)(p_115154_ + 0), (double)(p_115155_ + p_115157_), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        p_115153_.vertex((double)(p_115154_ + p_115156_), (double)(p_115155_ + p_115157_), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
-        p_115153_.vertex((double)(p_115154_ + p_115156_), (double)(p_115155_ + 0), 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
+        p_115153_.vertex(p_115154_ + 0, p_115155_ + 0, 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
+        p_115153_.vertex(p_115154_ + 0, p_115155_ + p_115157_, 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
+        p_115153_.vertex(p_115154_ + p_115156_, p_115155_ + p_115157_, 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
+        p_115153_.vertex(p_115154_ + p_115156_, p_115155_ + 0, 0.0D).color(p_115158_, p_115159_, p_115160_, p_115161_).endVertex();
         p_115153_.end();
         BufferUploader.end(p_115153_);
     }

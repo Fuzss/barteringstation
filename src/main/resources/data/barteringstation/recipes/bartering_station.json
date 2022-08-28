@@ -7,13 +7,13 @@
   ],
   "key": {
     "#": {
-      "item": "minecraft:warped_planks"
+      "tag": "minecraft:planks"
     },
     "@": {
       "item": "minecraft:gold_ingot"
     }
   },
   "result": {
-    "item": "minecraft:smithing_table"
+    "item": "barteringstation:bartering_station"
   }
 }

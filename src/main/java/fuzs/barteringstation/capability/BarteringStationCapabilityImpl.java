@@ -2,33 +2,39 @@ package fuzs.barteringstation.capability;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 public class BarteringStationCapabilityImpl implements BarteringStationCapability {
-    private BlockPos barteringStation;
+    private BlockPos pos;
 
     @Override
     public BlockPos getBarteringStationPos() {
-        return this.barteringStation;
+        return this.pos;
     }
 
     @Override
     public void setBarteringStationPos(BlockPos pos) {
-        this.barteringStation = pos;
+        this.pos = pos;
     }
 
     @Override
     public void write(CompoundTag tag) {
         if (this.hasBarteringStationPos()) {
-            tag.putInt("BarteringStationX", this.barteringStation.getX());
-            tag.putInt("BarteringStationY", this.barteringStation.getY());
-            tag.putInt("BarteringStationZ", this.barteringStation.getZ());
+            ListTag listTag = new ListTag();
+            listTag.add(IntTag.valueOf(this.pos.getX()));
+            listTag.add(IntTag.valueOf(this.pos.getY()));
+            listTag.add(IntTag.valueOf(this.pos.getZ()));
+            tag.put("Pos", listTag);
         }
     }
 
     @Override
     public void read(CompoundTag tag) {
-        if (tag.contains("BarteringStationX", 99) && tag.contains("BarteringStationY", 99) && tag.contains("BarteringStationZ", 99)) {
-            this.barteringStation = new BlockPos(tag.getInt("BarteringStationX"), tag.getInt("BarteringStationY"), tag.getInt("BarteringStationZ"));
+        if (tag.contains("Pos", Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList("Pos", Tag.TAG_INT);
+            this.pos = new BlockPos(listTag.getInt(0), listTag.getInt(1), listTag.getInt(2));
         }
     }
 }

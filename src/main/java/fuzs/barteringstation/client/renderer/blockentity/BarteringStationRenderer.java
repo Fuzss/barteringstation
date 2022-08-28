@@ -15,7 +15,7 @@ import net.minecraft.world.item.Items;
 
 /**
  * mostly copied from Quark's matrix enchanting table by Vazkii
- * https://github.com/Vazkii/Quark/blob/master/src/main/java/vazkii/quark/addons/oddities/client/render/MatrixEnchantingTableTileEntityRenderer.java
+ * <a href="https://github.com/Vazkii/Quark/blob/master/src/main/java/vazkii/quark/addons/oddities/client/render/MatrixEnchantingTableTileEntityRenderer.java">MatrixEnchantingTableTileEntityRenderer.java</a>
  */
 public class BarteringStationRenderer implements BlockEntityRenderer<BarteringStationBlockEntity> {
 
@@ -24,17 +24,18 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
     }
 
     @Override
-    public void render(BarteringStationBlockEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
-        float ageInTicks = tileEntityIn.time + partialTicks;
-        float nextRotation = tileEntityIn.rot - tileEntityIn.oRot;
+    public void render(BarteringStationBlockEntity blockEntity, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
+        combinedLightIn = blockEntity.combinedLight;
+        float ageInTicks = blockEntity.time + partialTicks;
+        float nextRotation = blockEntity.rot - blockEntity.oRot;
         while (nextRotation >= Math.PI) {
             nextRotation -= (Math.PI * 2F);
         }
         while (nextRotation < -Math.PI) {
             nextRotation += (Math.PI * 2F);
         }
-        float bookRotation = tileEntityIn.oRot + nextRotation * partialTicks;
-        float bookOpen = Mth.lerp(partialTicks, tileEntityIn.oOpen, tileEntityIn.open);
+        float bookRotation = blockEntity.oRot + nextRotation * partialTicks;
+        float bookOpen = Mth.lerp(partialTicks, blockEntity.oOpen, blockEntity.open);
         this.renderItem(new ItemStack(Items.GOLD_INGOT), ageInTicks, bookOpen, bookRotation, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
     }
 

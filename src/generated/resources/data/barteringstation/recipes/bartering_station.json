@@ -7,7 +7,7 @@
   ],
   "key": {
     "#": {
-      "item": "minecraft:warped_planks"
+      "tag": "minecraft:planks"
     },
     "@": {
       "item": "minecraft:gold_ingot"

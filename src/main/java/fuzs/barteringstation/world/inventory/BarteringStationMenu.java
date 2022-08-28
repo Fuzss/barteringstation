@@ -1,7 +1,7 @@
 package fuzs.barteringstation.world.inventory;
 
 import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;

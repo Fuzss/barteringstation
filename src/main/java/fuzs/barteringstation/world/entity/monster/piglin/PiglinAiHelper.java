@@ -1,6 +1,6 @@
 package fuzs.barteringstation.world.entity.monster.piglin;
 
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.init.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,6 +11,7 @@ import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.item.ItemStack;
 
 public class PiglinAiHelper extends PiglinAi {
+
     public static boolean mobInteract(Piglin piglin, ItemStack stack, BlockPos source) {
         if (canAdmire(piglin, stack)) {
             ItemStack currencyStack = stack.split(1);

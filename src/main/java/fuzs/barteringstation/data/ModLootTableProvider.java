@@ -2,7 +2,7 @@ package fuzs.barteringstation.data;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.init.ModRegistry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.loot.BlockLoot;
 import net.minecraft.data.loot.LootTableProvider;
@@ -41,10 +41,10 @@ public class ModLootTableProvider extends LootTableProvider {
     }
 
     private class ModBlockLoot extends BlockLoot {
+
         @Override
         protected void addTables() {
             this.dropSelf(ModRegistry.BARTERING_STATION_BLOCK.get());
-            this.dropSelf(ModRegistry.PIGLIN_HEAD_BLOCK.get());
         }
 
         @Override

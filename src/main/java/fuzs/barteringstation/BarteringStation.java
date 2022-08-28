@@ -2,11 +2,8 @@ package fuzs.barteringstation;
 
 import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.data.ModBlockTagsProvider;
-import fuzs.barteringstation.data.ModLanguageProvider;
-import fuzs.barteringstation.data.ModLootTableProvider;
-import fuzs.barteringstation.data.ModRecipeProvider;
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.data.*;
+import fuzs.barteringstation.init.ModRegistry;
 import fuzs.puzzleslib.config.ConfigHolder;
 import fuzs.puzzleslib.config.ConfigHolderImpl;
 import net.minecraft.data.DataGenerator;
@@ -42,5 +39,6 @@ public class BarteringStation {
         generator.addProvider(new ModLootTableProvider(generator, MOD_ID));
         generator.addProvider(new ModRecipeProvider(generator));
         generator.addProvider(new ModLanguageProvider(generator, MOD_ID));
+        generator.addProvider(new ModBlockStateProvider(generator, MOD_ID, existingFileHelper));
     }
 }

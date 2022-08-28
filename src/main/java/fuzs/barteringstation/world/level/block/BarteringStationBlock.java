@@ -1,6 +1,6 @@
 package fuzs.barteringstation.world.level.block;
 
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +23,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("deprecation")
 public class BarteringStationBlock extends BaseEntityBlock {
     public BarteringStationBlock(Properties p_49795_) {
         super(p_49795_);

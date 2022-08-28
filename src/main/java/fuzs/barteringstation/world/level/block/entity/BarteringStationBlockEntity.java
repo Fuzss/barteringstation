@@ -1,9 +1,12 @@
 package fuzs.barteringstation.world.level.block.entity;
 
 import fuzs.barteringstation.BarteringStation;
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.core.ModServices;
+import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.entity.monster.piglin.PiglinAiHelper;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
+import fuzs.barteringstation.world.level.BlockLightingUtil;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -25,22 +28,20 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.function.IntUnaryOperator;
 
 public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+    public static final String COOLDOWN_TAG = "Cooldown";
     public static final int ALL_SLOTS = 21;
     public static final int CURRENCY_SLOTS = 6;
     public static final int DATA_SLOTS = 2;
     public static final int BARTER_COOLDOWN = 400;
-    private static final int[] SLOTS_FOR_INPUT = IntStream.range(0, CURRENCY_SLOTS).toArray();
-    private static final int[] SLOTS_FOR_OUTPUT = IntStream.range(CURRENCY_SLOTS, ALL_SLOTS).toArray();
+    private static final int[] SLOTS_FOR_INPUT = Util.make(new int[CURRENCY_SLOTS], arr -> Arrays.setAll(arr, IntUnaryOperator.identity()));
+    private static final int[] SLOTS_FOR_OUTPUT = Util.make(new int[ALL_SLOTS - CURRENCY_SLOTS], arr -> Arrays.setAll(arr, i -> i + CURRENCY_SLOTS));
     private final ContainerData dataAccess = new ContainerData() {
 
         @Override
@@ -68,14 +69,13 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     private NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
     private int barterCooldown = -1;
     private int localPiglins;
-    LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN);
-
     public int time;
     public float open;
     public float oOpen;
     public float rot;
     public float oRot;
     private float tRot;
+    public int combinedLight;
 
     public BarteringStationBlockEntity(BlockPos p_155077_, BlockState p_155078_) {
         super(ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.get(), p_155077_, p_155078_);
@@ -86,7 +86,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         super.load(tag);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, this.items);
-        this.barterCooldown = tag.getInt("BarterCooldown");
+        this.barterCooldown = tag.getInt(COOLDOWN_TAG);
 
     }
 
@@ -94,33 +94,34 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, this.items);
-        tag.putInt("BarterCooldown", this.barterCooldown);
+        tag.putInt(COOLDOWN_TAG, this.barterCooldown);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
         if (level == null || !level.isClientSide) return;
+        blockEntity.combinedLight = BlockLightingUtil.getLightColor(level, blockEntity.getBlockPos().above());
         blockEntity.oOpen = blockEntity.open;
         blockEntity.oRot = blockEntity.rot;
-        Player playerentity = level.getNearestPlayer((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 3.0, false);
-        if (playerentity != null) {
-            double d0 = playerentity.getX() - ((double) pos.getX() + 0.5);
-            double d1 = playerentity.getZ() - ((double) pos.getZ() + 0.5);
+        Player player = level.getNearestPlayer((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 3.0, false);
+        if (player != null) {
+            double d0 = player.getX() - ((double) pos.getX() + 0.5);
+            double d1 = player.getZ() - ((double) pos.getZ() + 0.5);
             blockEntity.tRot = (float) Mth.atan2(d1, d0);
             blockEntity.open += 0.1F;
         } else {
             blockEntity.tRot += 0.02F;
             blockEntity.open -= 0.1F;
         }
-        while(blockEntity.rot >= (float) Math.PI) {
+        while (blockEntity.rot >= (float) Math.PI) {
             blockEntity.rot -= ((float) Math.PI * 2.0F);
         }
-        while(blockEntity.rot < -(float) Math.PI) {
+        while (blockEntity.rot < -(float) Math.PI) {
             blockEntity.rot += ((float) Math.PI * 2.0F);
         }
-        while(blockEntity.tRot >= (float) Math.PI) {
+        while (blockEntity.tRot >= (float) Math.PI) {
             blockEntity.tRot -= ((float) Math.PI * 2.0F);
         }
-        while(blockEntity.tRot < -(float) Math.PI) {
+        while (blockEntity.tRot < -(float) Math.PI) {
             blockEntity.tRot += ((float) Math.PI * 2.0F);
         }
         float f2;
@@ -128,7 +129,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         while (f2 >= (float) Math.PI) {
             f2 -= ((float) Math.PI * 2.0F);
         }
-        while(f2 < -(float) Math.PI) {
+        while (f2 < -(float) Math.PI) {
             f2 += ((float) Math.PI * 2.0F);
         }
         blockEntity.rot += f2 * 0.4F;
@@ -144,7 +145,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
                 blockEntity.barterCooldown++;
             }
         }
-        if (level.getGameTime() % BARTER_COOLDOWN == 0) {
+        // don't make all stations use the same tick
+        if ((level.getGameTime() + pos.asLong()) % BARTER_COOLDOWN == 0) {
             Vec3 blockCenterPos = Vec3.atCenterOf(pos);
             final int horizontalRange = BarteringStation.CONFIG.server().horizontalRange;
             final int verticalRange = BarteringStation.CONFIG.server().verticalRange;
@@ -221,18 +223,23 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     @Override
     public ItemStack removeItem(int p_58330_, int p_58331_) {
-        return ContainerHelper.removeItem(this.items, p_58330_, p_58331_);
+        ItemStack stack = ContainerHelper.removeItem(this.items, p_58330_, p_58331_);
+        if (!stack.isEmpty()) this.setChanged();
+        return stack;
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int p_58387_) {
-        return ContainerHelper.takeItem(this.items, p_58387_);
+        ItemStack stack = ContainerHelper.takeItem(this.items, p_58387_);
+        if (!stack.isEmpty()) this.setChanged();
+        return stack;
     }
 
     @Override
     public void setItem(int index, ItemStack stack) {
         if (index >= 0 && index < this.getContainerSize()) {
             this.items.set(index, stack);
+            this.setChanged();
         }
     }
 
@@ -248,7 +255,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
         if (index >= 0 && index < CURRENCY_SLOTS) {
-            return stack.isPiglinCurrency();
+            return ModServices.ABSTRACTIONS.isStackPiglinCurrency(stack);
         }
         return false;
     }
@@ -316,30 +323,5 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             stack.shrink(transferAmount);
             this.setItem(slot, stackToInsert);
         }
-    }
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
-        if (!this.remove && facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            if (facing == Direction.DOWN) {
-                return this.handlers[1].cast();
-            } else
-                return this.handlers[0].cast();
-        }
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        for (LazyOptional<? extends IItemHandler> handler : this.handlers) {
-            handler.invalidate();
-        }
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        this.handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN);
     }
 }

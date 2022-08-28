@@ -1,7 +1,7 @@
 package fuzs.barteringstation.mixin;
 
 import fuzs.barteringstation.capability.BarteringStationCapability;
-import fuzs.barteringstation.registry.ModRegistry;
+import fuzs.barteringstation.init.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.monster.piglin.Piglin;
@@ -18,6 +18,7 @@ import java.util.List;
 
 @Mixin(PiglinAi.class)
 public abstract class PiglinAiMixin {
+
     @Inject(method = "stopHoldingOffHandItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/piglin/PiglinAi;getBarterResponseItems(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Ljava/util/List;"), cancellable = true)
     private static void stopHoldingOffHandItem(Piglin piglin, boolean finishedHolding, CallbackInfo callbackInfo) {
         if (piglin.level.isClientSide) return;
