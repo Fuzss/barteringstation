@@ -1,5 +1,7 @@
 package fuzs.barteringstation.data;
 
+import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
+import fuzs.barteringstation.client.handler.PiglinHeadModelHandler;
 import fuzs.barteringstation.init.ModRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
@@ -27,6 +29,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 this.modLoc("block/bartering_station_front")
         ).texture("particle", this.modLoc("block/bartering_station_front")));
         this.itemModels().withExistingParent(this.name(ModRegistry.BARTERING_STATION_BLOCK.get()), this.extendKey(ModRegistry.BARTERING_STATION_BLOCK.get(), ModelProvider.BLOCK_FOLDER));
+        this.itemModels().withExistingParent(PiglinHeadModelHandler.PIGLIN_ITEM_MODEL_LOCATION.toString(), this.mcLoc("template_skull"));
     }
 
     private ResourceLocation key(Block block) {

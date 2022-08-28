@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.function.IntUnaryOperator;
 
 public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
-    public static final String COOLDOWN_TAG = "Cooldown";
+    public static final String TAG_COOLDOWN = "Cooldown";
     public static final int ALL_SLOTS = 21;
     public static final int CURRENCY_SLOTS = 6;
     public static final int DATA_SLOTS = 2;
@@ -86,7 +86,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         super.load(tag);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, this.items);
-        this.barterCooldown = tag.getInt(COOLDOWN_TAG);
+        this.barterCooldown = tag.getInt(TAG_COOLDOWN);
 
     }
 
@@ -94,7 +94,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, this.items);
-        tag.putInt(COOLDOWN_TAG, this.barterCooldown);
+        tag.putInt(TAG_COOLDOWN, this.barterCooldown);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
@@ -146,25 +146,27 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             }
         }
         // don't make all stations use the same tick
-        if ((level.getGameTime() + pos.asLong()) % BARTER_COOLDOWN == 0) {
+        long time = level.getGameTime() + pos.asLong();
+        if (time % (BARTER_COOLDOWN / 5) == 0) {
             Vec3 blockCenterPos = Vec3.atCenterOf(pos);
             final int horizontalRange = BarteringStation.CONFIG.server().horizontalRange;
             final int verticalRange = BarteringStation.CONFIG.server().verticalRange;
             List<Piglin> piglins = level.getEntitiesOfClass(Piglin.class, new AABB(blockCenterPos.add(-horizontalRange, -verticalRange, -horizontalRange), blockCenterPos.add(horizontalRange, verticalRange, horizontalRange)), AbstractPiglin::isAdult);
-            // always update this
+            // always update this, also more often than running bartering code
             blockEntity.localPiglins = piglins.size();
             // stop giving out gold when not slots are available
-            if (blockEntity.getFreeSlot() != -1) {
+            if (time % BARTER_COOLDOWN == 0 && blockEntity.getFreeSlot() != -1) {
                 int piglinIndex = 0;
                 for (int i = 0; i < CURRENCY_SLOTS; i++) {
                     ItemStack stack = blockEntity.getItem(i);
                     if (!stack.isEmpty()) {
                         while (true) {
                             boolean outOfBounds = piglinIndex >= piglins.size();
-                            if (outOfBounds || PiglinAiHelper.mobInteract(piglins.get(piglinIndex++), stack, blockEntity.worldPosition))
+                            if (outOfBounds || PiglinAiHelper.mobInteract(piglins.get(piglinIndex++), stack, pos)) {
                                 if (!outOfBounds) {
                                     blockEntity.barterCooldown = 0;
                                 }
+                            }
                             break;
                         }
                     }

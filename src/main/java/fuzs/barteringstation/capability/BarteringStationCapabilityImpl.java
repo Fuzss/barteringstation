@@ -7,6 +7,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
 public class BarteringStationCapabilityImpl implements BarteringStationCapability {
+    private static final String TAG_POSITION = "Pos";
+
     private BlockPos pos;
 
     @Override
@@ -26,14 +28,14 @@ public class BarteringStationCapabilityImpl implements BarteringStationCapabilit
             listTag.add(IntTag.valueOf(this.pos.getX()));
             listTag.add(IntTag.valueOf(this.pos.getY()));
             listTag.add(IntTag.valueOf(this.pos.getZ()));
-            tag.put("Pos", listTag);
+            tag.put(TAG_POSITION, listTag);
         }
     }
 
     @Override
     public void read(CompoundTag tag) {
-        if (tag.contains("Pos", Tag.TAG_LIST)) {
-            ListTag listTag = tag.getList("Pos", Tag.TAG_INT);
+        if (tag.contains(TAG_POSITION, Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList(TAG_POSITION, Tag.TAG_INT);
             this.pos = new BlockPos(listTag.getInt(0), listTag.getInt(1), listTag.getInt(2));
         }
     }

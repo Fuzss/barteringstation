@@ -1,5 +1,5 @@
 {
   "block.barteringstation.bartering_station": "Bartering Station",
   "container.barteringstation.bartering_station": "Bartering Station",
-  "gui.barteringstation.bartering_station.piglins": "x%s"
+  "gui.barteringstation.bartering_station.piglins": "%s piglins are nearby for bartering"
 }
