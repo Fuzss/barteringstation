@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -52,10 +53,13 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         int startX = this.leftPos + 53;
         int startY = this.topPos + 20;
         if (startX <= mouseX && startY <= mouseY && mouseX < startX + 16 && mouseY < startY + 16) {
-            int localPiglins = this.menu.getLocalPiglins();
-            Component component = new TranslatableComponent("gui.barteringstation.bartering_station.piglins", new TextComponent(String.valueOf(localPiglins)).withStyle(localPiglins > 0 ? ChatFormatting.GREEN : ChatFormatting.RED));
+            Component component = new TranslatableComponent("gui.barteringstation.bartering_station.piglins", makePiglinComponent(this.menu.getNearbyPiglins()));
             this.renderTooltip(poseStack, component, mouseX, mouseY);
         }
+    }
+
+    private static MutableComponent makePiglinComponent(int nearbyPiglins) {
+        return new TextComponent(String.valueOf(nearbyPiglins)).withStyle(nearbyPiglins > 0 ? ChatFormatting.GOLD : ChatFormatting.RED);
     }
 
     @Override
@@ -68,7 +72,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
             this.renderBgCooldownArrows(poseStack);
         }
         this.renderPiglinHead(53, 20, 150);
-        this.decoratePiglinHead(this.menu.getLocalPiglins(), 53, 20, 150);
+        this.decoratePiglinHead(53, 20, 150);
     }
 
     private void renderPiglinHead(int posX, int posY, int blitOffset) {
@@ -80,9 +84,9 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         modelViewStack.popPose();
     }
 
-    private void decoratePiglinHead(int localPiglins, int posX, int posY, int blitOffset) {
+    private void decoratePiglinHead(int posX, int posY, int blitOffset) {
         PoseStack posestack = new PoseStack();
-        Component component = new TextComponent(String.valueOf(localPiglins)).withStyle(localPiglins > 0 ? ChatFormatting.GREEN : ChatFormatting.RED);
+        Component component = makePiglinComponent(this.menu.getNearbyPiglins());
         posestack.translate(0.0, 0.0, blitOffset + 200.0);
         MultiBufferSource.BufferSource multibuffersource$buffersource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         this.font.drawInBatch(component, (float) (posX + 19 - 2 - this.font.width(component)), (float) (posY + 6 + 3), -1, true, posestack.last().pose(), multibuffersource$buffersource, false, 0, 15728880);
@@ -90,15 +94,15 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
     }
 
     private void renderBgCooldownArrows(PoseStack poseStack) {
-        int arrow1Progress = this.menu.getArrow1Progress();
+        int arrow1Progress = this.menu.getTopArrowProgress();
         this.blit(poseStack, this.leftPos + 49, this.topPos + 40, 176, 0, arrow1Progress, ARROW_SIZE_Y);
-        int arrow2Progress = this.menu.getArrow2Progress();
+        int arrow2Progress = this.menu.getBottomArrowProgress();
         this.blit(poseStack, this.leftPos + 49 + ARROW_SIZE_X - arrow2Progress, this.topPos + 53, 176 + ARROW_SIZE_X - arrow2Progress, ARROW_SIZE_Y, arrow2Progress, ARROW_SIZE_Y);
     }
 
     private void renderCooldownOverlays() {
         float cooldownProgress = this.menu.getCooldownProgress();
-        if (cooldownProgress > 0.0F) {
+        if (cooldownProgress > 0.0F && cooldownProgress < 1.0F) {
             PoseStack posestack = RenderSystem.getModelViewStack();
             posestack.pushPose();
             posestack.translate(this.leftPos, this.topPos, 0.0);

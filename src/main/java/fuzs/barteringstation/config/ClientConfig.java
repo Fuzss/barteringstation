@@ -5,7 +5,7 @@ import fuzs.puzzleslib.config.annotation.Config;
 
 public class ClientConfig extends AbstractConfig {
     @Config(description = "Way of showing current cooldown of a bartering station.")
-    public CooldownRenderType cooldownRenderType = CooldownRenderType.NONE;
+    public CooldownRenderType cooldownRenderType = CooldownRenderType.ARROWS;
 
     public ClientConfig() {
         super("");

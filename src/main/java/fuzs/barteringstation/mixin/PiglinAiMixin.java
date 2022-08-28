@@ -20,7 +20,7 @@ import java.util.List;
 public abstract class PiglinAiMixin {
 
     @Inject(method = "stopHoldingOffHandItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/piglin/PiglinAi;getBarterResponseItems(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Ljava/util/List;"), cancellable = true)
-    private static void stopHoldingOffHandItem(Piglin piglin, boolean finishedHolding, CallbackInfo callbackInfo) {
+    private static void stopHoldingOffHandItem$inject$invoke$getBarterResponseItems(Piglin piglin, boolean finishedHolding, CallbackInfo callback) {
         if (piglin.level.isClientSide) return;
         LazyOptional<BarteringStationCapability> optional = piglin.getCapability(ModRegistry.BARTERING_STATION_CAPABILITY);
         if (optional.isPresent() && optional.map(BarteringStationCapability::hasBarteringStationPos).orElseThrow()) {
@@ -35,7 +35,7 @@ public abstract class PiglinAiMixin {
                 } else {
                     piglin.swing(InteractionHand.OFF_HAND);
                 }
-                callbackInfo.cancel();
+                callback.cancel();
             });
         }
     }

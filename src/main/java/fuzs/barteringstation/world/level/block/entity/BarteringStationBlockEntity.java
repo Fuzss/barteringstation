@@ -32,14 +32,14 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
 
 public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
-    public static final String TAG_COOLDOWN = "Cooldown";
+    public static final String TAG_DELAY = "Delay";
     public static final int ALL_SLOTS = 21;
     public static final int CURRENCY_SLOTS = 6;
     public static final int DATA_SLOTS = 2;
-    public static final int BARTER_COOLDOWN = 400;
     private static final int[] SLOTS_FOR_INPUT = Util.make(new int[CURRENCY_SLOTS], arr -> Arrays.setAll(arr, IntUnaryOperator.identity()));
     private static final int[] SLOTS_FOR_OUTPUT = Util.make(new int[ALL_SLOTS - CURRENCY_SLOTS], arr -> Arrays.setAll(arr, i -> i + CURRENCY_SLOTS));
     private final ContainerData dataAccess = new ContainerData() {
@@ -47,18 +47,15 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         @Override
         public int get(int id) {
             return switch (id) {
-                case 0 -> BarteringStationBlockEntity.this.barterCooldown;
-                case 1 -> BarteringStationBlockEntity.this.localPiglins;
-                default -> 0;
+                case 0 -> BarteringStationBlockEntity.this.getBarterDelay();
+                case 1 -> BarteringStationBlockEntity.this.nearbyPiglins;
+                default -> throw new IndexOutOfBoundsException(id);
             };
         }
 
         @Override
         public void set(int id, int data) {
-            switch (id) {
-                case 0 -> BarteringStationBlockEntity.this.barterCooldown = data;
-                case 1 -> BarteringStationBlockEntity.this.localPiglins = data;
-            }
+            throw new UnsupportedOperationException("Writing to bartering station data access not supported");
         }
 
         @Override
@@ -67,8 +64,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         }
     };
     private NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
-    private int barterCooldown = -1;
-    private int localPiglins;
+    private int barterDelay;
+    private int nearbyPiglins;
     public int time;
     public float open;
     public float oOpen;
@@ -86,7 +83,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         super.load(tag);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, this.items);
-        this.barterCooldown = tag.getInt(TAG_COOLDOWN);
+        this.barterDelay = tag.getShort(TAG_DELAY);
 
     }
 
@@ -94,12 +91,14 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         ContainerHelper.saveAllItems(tag, this.items);
-        tag.putInt(TAG_COOLDOWN, this.barterCooldown);
+        tag.putShort(TAG_DELAY, (short) this.barterDelay);
+    }
+
+    public int getBarterDelay() {
+        return Math.min(BarteringStation.CONFIG.server().barterDelay, this.barterDelay);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
-        if (level == null || !level.isClientSide) return;
-        blockEntity.combinedLight = BlockLightingUtil.getLightColor(level, blockEntity.getBlockPos().above());
         blockEntity.oOpen = blockEntity.open;
         blockEntity.oRot = blockEntity.rot;
         Player player = level.getNearestPlayer((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 3.0, false);
@@ -135,40 +134,42 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         blockEntity.rot += f2 * 0.4F;
         blockEntity.open = Mth.clamp(blockEntity.open, 0.0F, 1.0F);
         ++blockEntity.time;
+        blockEntity.combinedLight = BlockLightingUtil.getLightColor(level, blockEntity.getBlockPos().above());
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BarteringStationBlockEntity blockEntity) {
-        if (blockEntity.barterCooldown >= 0) {
-            if (blockEntity.barterCooldown >= BARTER_COOLDOWN) {
-                blockEntity.barterCooldown = -1;
-            } else {
-                blockEntity.barterCooldown++;
+        if (blockEntity.barterDelay > 0) blockEntity.barterDelay--;
+        final int totalBarterDelay = BarteringStation.CONFIG.server().barterDelay;
+        boolean tryPerformBarter = blockEntity.barterDelay % totalBarterDelay == 0;
+        // do this more often then handing out gold to update the piglin count in the client screen
+        if (tryPerformBarter || blockEntity.barterDelay % (totalBarterDelay / 4) == 0) {
+            List<Piglin> piglins = findNearbyPiglins(level, pos);
+            blockEntity.nearbyPiglins = piglins.size();
+            if (tryPerformBarter) {
+                blockEntity.barterDelay = totalBarterDelay * 2;
+                barterWithPiglins(pos, blockEntity, piglins);
             }
         }
-        // don't make all stations use the same tick
-        long time = level.getGameTime() + pos.asLong();
-        if (time % (BARTER_COOLDOWN / 5) == 0) {
-            Vec3 blockCenterPos = Vec3.atCenterOf(pos);
-            final int horizontalRange = BarteringStation.CONFIG.server().horizontalRange;
-            final int verticalRange = BarteringStation.CONFIG.server().verticalRange;
-            List<Piglin> piglins = level.getEntitiesOfClass(Piglin.class, new AABB(blockCenterPos.add(-horizontalRange, -verticalRange, -horizontalRange), blockCenterPos.add(horizontalRange, verticalRange, horizontalRange)), AbstractPiglin::isAdult);
-            // always update this, also more often than running bartering code
-            blockEntity.localPiglins = piglins.size();
-            // stop giving out gold when not slots are available
-            if (time % BARTER_COOLDOWN == 0 && blockEntity.getFreeSlot() != -1) {
-                int piglinIndex = 0;
-                for (int i = 0; i < CURRENCY_SLOTS; i++) {
-                    ItemStack stack = blockEntity.getItem(i);
-                    if (!stack.isEmpty()) {
-                        while (true) {
-                            boolean outOfBounds = piglinIndex >= piglins.size();
-                            if (outOfBounds || PiglinAiHelper.mobInteract(piglins.get(piglinIndex++), stack, pos)) {
-                                if (!outOfBounds) {
-                                    blockEntity.barterCooldown = 0;
-                                }
-                            }
-                            break;
-                        }
+    }
+
+    private static List<Piglin> findNearbyPiglins(Level level, BlockPos pos) {
+        Vec3 centerPos = Vec3.atCenterOf(pos);
+        final int horizontalRange = BarteringStation.CONFIG.server().horizontalRange;
+        final int verticalRange = BarteringStation.CONFIG.server().verticalRange;
+        return level.getEntitiesOfClass(Piglin.class, new AABB(centerPos.add(-horizontalRange, -verticalRange, -horizontalRange), centerPos.add(horizontalRange, verticalRange, horizontalRange)), AbstractPiglin::isAdult);
+    }
+
+    private static void barterWithPiglins(BlockPos pos, BarteringStationBlockEntity blockEntity, List<Piglin> piglins) {
+        // stop giving out gold when not slots are available
+        if (piglins.isEmpty() || blockEntity.findFreeResponseSlot().isEmpty()) return;
+        int currentPiglin = 0;
+        for (int i = 0; i < CURRENCY_SLOTS; i++) {
+            ItemStack stack = blockEntity.getItem(i);
+            if (!stack.isEmpty()) {
+                while (currentPiglin < piglins.size()) {
+                    if (PiglinAiHelper.mobInteract(piglins.get(currentPiglin++), stack, pos)) {
+                        blockEntity.barterDelay = BarteringStation.CONFIG.server().barterDelay;
+                        break;
                     }
                 }
             }
@@ -270,12 +271,12 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     public boolean placeBarterResponseItem(ItemStack stack) {
         while (true) {
             if (!stack.isEmpty()) {
-                int slot = this.getSlotWithRemainingSpace(stack);
-                if (slot == -1) {
-                    slot = this.getFreeSlot();
+                OptionalInt slot = this.findResponseSlotWithSpace(stack);
+                if (slot.isEmpty()) {
+                    slot = this.findFreeResponseSlot();
                 }
-                if (slot != -1) {
-                    this.transferStackInSlot(stack, slot);
+                if (slot.isPresent()) {
+                    this.mergeStackToSlot(stack, slot.getAsInt());
                     if (stack.isEmpty()) {
                         return true;
                     }
@@ -286,44 +287,44 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         }
     }
 
-    private int getSlotWithRemainingSpace(ItemStack stack) {
+    private OptionalInt findResponseSlotWithSpace(ItemStack stack) {
         for (int i = CURRENCY_SLOTS; i < this.getContainerSize(); i++) {
-            if (this.hasRemainingSpaceForItem(this.getItem(i), stack)) {
-                return i;
+            if (this.hasSpaceForItem(this.getItem(i), stack)) {
+                return OptionalInt.of(i);
             }
         }
-        return -1;
+        return OptionalInt.empty();
     }
 
-    private boolean hasRemainingSpaceForItem(ItemStack stack1, ItemStack stack2) {
+    private boolean hasSpaceForItem(ItemStack stack1, ItemStack stack2) {
         return !stack1.isEmpty() && ItemStack.isSameItemSameTags(stack1, stack2) && stack1.isStackable() && stack1.getCount() < stack1.getMaxStackSize() && stack1.getCount() < this.getMaxStackSize();
     }
 
-    private int getFreeSlot() {
+    private OptionalInt findFreeResponseSlot() {
         for (int i = CURRENCY_SLOTS; i < this.getContainerSize(); i++) {
             if (this.getItem(i).isEmpty()) {
-                return i;
+                return OptionalInt.of(i);
             }
         }
-        return -1;
+        return OptionalInt.empty();
     }
 
-    private void transferStackInSlot(ItemStack stack, int slot) {
-        ItemStack stackInSlot = this.getItem(slot);
+    private void mergeStackToSlot(ItemStack stackToMerge, int targetSlot) {
+        ItemStack stackInSlot = this.getItem(targetSlot);
+        ItemStack stackToInsert;
         if (stackInSlot.isEmpty()) {
-            ItemStack stackToInsert = stack.copy();
-            stack.setCount(0);
-            if (stack.hasTag()) {
-                stackToInsert.setTag(stack.getTag().copy());
+            stackToInsert = stackToMerge.copy();
+            stackToMerge.setCount(0);
+            if (stackToMerge.hasTag()) {
+                stackToInsert.setTag(stackToMerge.getTag().copy());
             }
-            this.setItem(slot, stackToInsert);
         } else {
-            ItemStack stackToInsert = stackInSlot.copy();
-            int transferAmount = stack.getCount();
+            stackToInsert = stackInSlot.copy();
+            int transferAmount = stackToMerge.getCount();
             transferAmount = Math.min(transferAmount, stackToInsert.getMaxStackSize() - stackToInsert.getCount());
             stackToInsert.grow(transferAmount);
-            stack.shrink(transferAmount);
-            this.setItem(slot, stackToInsert);
+            stackToMerge.shrink(transferAmount);
         }
+        this.setItem(targetSlot, stackToInsert);
     }
 }

@@ -1,14 +1,17 @@
 package fuzs.barteringstation.world.inventory;
 
+import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class BarteringStationMenu extends AbstractContainerMenu {
@@ -103,23 +106,19 @@ public class BarteringStationMenu extends AbstractContainerMenu {
         return itemstack;
     }
 
-    public int getArrow1Progress() {
-        return Mth.clamp((this.data.get(0) * 2 * BarteringStationScreen.ARROW_SIZE_X) / BarteringStationBlockEntity.BARTER_COOLDOWN, 0, BarteringStationScreen.ARROW_SIZE_X);
+    public int getTopArrowProgress() {
+        return ((BarteringStation.CONFIG.server().barterDelay - this.data.get(0)) * 2 * BarteringStationScreen.ARROW_SIZE_X) / BarteringStation.CONFIG.server().barterDelay;
     }
 
-    public int getArrow2Progress() {
-        return Mth.clamp((this.data.get(0) * 2 * BarteringStationScreen.ARROW_SIZE_X) / BarteringStationBlockEntity.BARTER_COOLDOWN - BarteringStationScreen.ARROW_SIZE_X, 0, BarteringStationScreen.ARROW_SIZE_X);
+    public int getBottomArrowProgress() {
+        return ((BarteringStation.CONFIG.server().barterDelay - this.data.get(0)) * 2 * BarteringStationScreen.ARROW_SIZE_X) / BarteringStation.CONFIG.server().barterDelay - BarteringStationScreen.ARROW_SIZE_X;
     }
 
     public float getCooldownProgress() {
-        int cooldown = this.data.get(0);
-        if (cooldown == -1) {
-            return -1;
-        }
-        return (BarteringStationBlockEntity.BARTER_COOLDOWN - this.data.get(0)) / (float) BarteringStationBlockEntity.BARTER_COOLDOWN;
+        return this.data.get(0) / (float) BarteringStation.CONFIG.server().barterDelay;
     }
 
-    public int getLocalPiglins() {
+    public int getNearbyPiglins() {
         return this.data.get(1);
     }
 }
