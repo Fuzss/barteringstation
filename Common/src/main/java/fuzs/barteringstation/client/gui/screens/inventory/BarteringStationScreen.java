@@ -24,7 +24,6 @@ import net.minecraft.world.inventory.Slot;
 
 public class BarteringStationScreen extends AbstractContainerScreen<BarteringStationMenu> {
     private static final ResourceLocation BARTERING_STATION_LOCATION = new ResourceLocation(BarteringStation.MOD_ID, "textures/gui/container/bartering_station.png");
-    private static final ResourceLocation PIGLIN_ENTITY_TEXTURE_LOCATION = new ResourceLocation("textures/entity/piglin/piglin.png");
     public static final int ARROW_SIZE_X = 24;
     public static final int ARROW_SIZE_Y = 18;
 
@@ -78,8 +77,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
         modelViewStack.translate(this.leftPos, this.topPos, 0.0);
-        RenderType rendertype = RenderType.entityCutoutNoCullZOffset(PIGLIN_ENTITY_TEXTURE_LOCATION);
-        PiglinHeadModelHandler.renderItemLikeGuiModel(posX, posY, blitOffset, this.skullModel, rendertype, PiglinHeadModelHandler.INSTANCE.getPiglinHeadModel());
+        PiglinHeadModelHandler.INSTANCE.renderPiglinHeadGuiModel(posX, posY, blitOffset, this.skullModel);
         modelViewStack.popPose();
     }
 

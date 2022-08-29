@@ -11,5 +11,6 @@ public class ServerConfig implements ConfigCore {
     @Config.IntRange(min = 1, max = 96)
     public int verticalRange = 4;
     @Config(description = "Min delay in ticks after a bartering station tries to give gold ingots to piglins again. Bartering itself (the piglin inspecting the gold ingot) takes 120 ticks.")
+    @Config.IntRange(min = 20)
     public int barterDelay = 240;
 }

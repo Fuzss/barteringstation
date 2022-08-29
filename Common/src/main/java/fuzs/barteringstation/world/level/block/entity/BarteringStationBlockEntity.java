@@ -259,7 +259,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
         if (index >= 0 && index < CURRENCY_SLOTS) {
-            return ModServices.ABSTRACTIONS.isStackPiglinCurrency(stack);
+            return ModServices.ABSTRACTIONS.isPiglinCurrency(stack);
         }
         return false;
     }

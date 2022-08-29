@@ -4,5 +4,5 @@ import net.minecraft.world.item.ItemStack;
 
 public interface CommonAbstractions {
 
-    boolean isStackPiglinCurrency(ItemStack stack);
+    boolean isPiglinCurrency(ItemStack stack);
 }

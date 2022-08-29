@@ -38,7 +38,7 @@ public class PiglinAiHelper extends PiglinAi {
     }
 
     private static void holdInOffHand(Piglin piglin, ItemStack stack) {
-        if (ModServices.ABSTRACTIONS.isStackPiglinCurrency(stack)) {
+        if (ModServices.ABSTRACTIONS.isPiglinCurrency(stack)) {
             piglin.setItemSlot(EquipmentSlot.OFFHAND, stack);
             piglin.setGuaranteedDrop(EquipmentSlot.OFFHAND);
         } else {

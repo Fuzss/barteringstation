@@ -6,7 +6,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import fuzs.barteringstation.BarteringStation;
-import fuzs.barteringstation.client.core.ClientModServices;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.PartPose;
@@ -21,6 +20,9 @@ import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Objects;
+import java.util.function.Function;
+
 /**
  * why this quirky way with loading an actual model file just for the transformations? why not lol
  *
@@ -29,22 +31,18 @@ import net.minecraft.resources.ResourceLocation;
 public class PiglinHeadModelHandler {
     public static final PiglinHeadModelHandler INSTANCE = new PiglinHeadModelHandler();
     public static final ResourceLocation PIGLIN_ITEM_MODEL_LOCATION = new ResourceLocation(BarteringStation.MOD_ID, "item/piglin_head");
+    private static final ResourceLocation PIGLIN_ENTITY_TEXTURE_LOCATION = new ResourceLocation("textures/entity/piglin/piglin.png");
 
     private BakedModel piglinHeadModel;
 
-    public BakedModel getPiglinHeadModel() {
-        this.dissolve();
-        return this.piglinHeadModel;
+    public void bakeModel(Function<ResourceLocation, BakedModel> bakery) {
+        this.piglinHeadModel = bakery.apply(PIGLIN_ITEM_MODEL_LOCATION);
     }
 
-    private void dissolve() {
-        if (this.piglinHeadModel == null) {
-            this.piglinHeadModel = ClientModServices.ABSTRACTIONS.bakeModel(PIGLIN_ITEM_MODEL_LOCATION);
-        }
-    }
-
-    public void invalidate() {
-        this.piglinHeadModel = null;
+    public void renderPiglinHeadGuiModel(int posX, int posY, int blitOffset, SkullModelBase skullModel) {
+        Objects.requireNonNull(this.piglinHeadModel, "Piglin head model has not been loaded yet");
+        RenderType rendertype = RenderType.entityCutoutNoCullZOffset(PIGLIN_ENTITY_TEXTURE_LOCATION);
+        PiglinHeadModelHandler.renderItemLikeGuiModel(posX, posY, blitOffset, skullModel, rendertype, this.piglinHeadModel);
     }
 
     public static void renderItemLikeGuiModel(int posX, int posY, int blitOffset, SkullModelBase skullModel, RenderType renderType, BakedModel bakedModel) {

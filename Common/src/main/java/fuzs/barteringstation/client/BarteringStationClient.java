@@ -25,8 +25,8 @@ public class BarteringStationClient implements ClientModConstructor {
     }
 
     @Override
-    public void onLoadModels(LoadModelsContext context) {
-        ClientModConstructor.super.onLoadModels(context);
+    public void onRegisterModelBakingCompletedListeners(ModelBakingCompletedListenersContext context) {
+        context.registerReloadListener(context1 -> PiglinHeadModelHandler.INSTANCE.bakeModel(context1::bakeModel));
     }
 
     @Override

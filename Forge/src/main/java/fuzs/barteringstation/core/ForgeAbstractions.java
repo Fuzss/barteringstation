@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack;
 public class ForgeAbstractions implements CommonAbstractions {
 
     @Override
-    public boolean isStackPiglinCurrency(ItemStack stack) {
+    public boolean isPiglinCurrency(ItemStack stack) {
         return stack.isPiglinCurrency();
     }
 }

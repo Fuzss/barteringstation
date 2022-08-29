@@ -35,7 +35,7 @@ public class BarteringStationMenu extends AbstractContainerMenu {
                 
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return ModServices.ABSTRACTIONS.isStackPiglinCurrency(stack);
+                    return ModServices.ABSTRACTIONS.isPiglinCurrency(stack);
                 }
             });
         }
@@ -77,7 +77,7 @@ public class BarteringStationMenu extends AbstractContainerMenu {
                 }
                 slot.onQuickCraft(itemstack1, itemstack);
             } else if (index >= BarteringStationBlockEntity.ALL_SLOTS) {
-                if (ModServices.ABSTRACTIONS.isStackPiglinCurrency(itemstack1)) {
+                if (ModServices.ABSTRACTIONS.isPiglinCurrency(itemstack1)) {
                     if (!this.moveItemStackTo(itemstack1, 0, BarteringStationBlockEntity.CURRENCY_SLOTS, false)) {
                         return ItemStack.EMPTY;
                     }
