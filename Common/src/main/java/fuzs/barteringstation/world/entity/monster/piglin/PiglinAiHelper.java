@@ -1,5 +1,7 @@
 package fuzs.barteringstation.world.entity.monster.piglin;
 
+import fuzs.barteringstation.BarteringStation;
+import fuzs.barteringstation.config.ServerConfig;
 import fuzs.barteringstation.core.ModServices;
 import fuzs.barteringstation.init.ModRegistry;
 import net.minecraft.core.BlockPos;
@@ -53,7 +55,7 @@ public class PiglinAiHelper extends PiglinAi {
     }
 
     private static void admireGoldItem(LivingEntity p_34939_) {
-        p_34939_.getBrain().setMemoryWithExpiry(MemoryModuleType.ADMIRING_ITEM, true, 120L);
+        p_34939_.getBrain().setMemoryWithExpiry(MemoryModuleType.ADMIRING_ITEM, true, BarteringStation.CONFIG.get(ServerConfig.class).barterDelay / 2);
     }
 
     private static void stopWalking(Piglin p_35007_) {
