@@ -23,6 +23,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("deprecation")
 public class BarteringStationBlock extends BaseEntityBlock {
 
     public BarteringStationBlock(Properties p_49795_) {
