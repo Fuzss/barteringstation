@@ -79,15 +79,19 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         modelViewStack.translate(this.leftPos, this.topPos, 0.0);
         PiglinHeadModelHandler.INSTANCE.renderPiglinHeadGuiModel(posX, posY, blitOffset, this.skullModel);
         modelViewStack.popPose();
+        RenderSystem.applyModelViewMatrix();
+        RenderSystem.enableDepthTest();
     }
 
     private void decoratePiglinHead(int posX, int posY, int blitOffset) {
         PoseStack posestack = new PoseStack();
-        Component component = makePiglinComponent(this.menu.getNearbyPiglins());
-        posestack.translate(0.0, 0.0, blitOffset + 200.0);
+        posestack.pushPose();
+        posestack.translate(this.leftPos, this.topPos, blitOffset + 200.0);
         MultiBufferSource.BufferSource multibuffersource$buffersource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+        Component component = makePiglinComponent(this.menu.getNearbyPiglins());
         this.font.drawInBatch(component, (float) (posX + 19 - 2 - this.font.width(component)), (float) (posY + 6 + 3), -1, true, posestack.last().pose(), multibuffersource$buffersource, false, 0, 15728880);
         multibuffersource$buffersource.endBatch();
+        posestack.popPose();
     }
 
     private void renderBgCooldownArrows(PoseStack poseStack) {
