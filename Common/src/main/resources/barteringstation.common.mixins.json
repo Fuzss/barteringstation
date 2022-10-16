@@ -5,7 +5,7 @@
   "package": "fuzs.barteringstation.mixin",
   "refmap": "barteringstation.refmap.json",
   "mixins": [
-    "PiglinAiMixin"
+    "BehaviorMixin"
   ],
   "client": [
   ],
