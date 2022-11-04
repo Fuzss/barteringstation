@@ -14,9 +14,10 @@ import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -51,13 +52,13 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         int startX = this.leftPos + 53;
         int startY = this.topPos + 20;
         if (startX <= mouseX && startY <= mouseY && mouseX < startX + 16 && mouseY < startY + 16) {
-            Component component = Component.translatable("gui.barteringstation.bartering_station.piglins", makePiglinComponent(this.menu.getNearbyPiglins()));
+            Component component = new TranslatableComponent("gui.barteringstation.bartering_station.piglins", makePiglinComponent(this.menu.getNearbyPiglins()));
             this.renderTooltip(poseStack, component, mouseX, mouseY);
         }
     }
 
     private static MutableComponent makePiglinComponent(int nearbyPiglins) {
-        return Component.literal(String.valueOf(nearbyPiglins)).withStyle(nearbyPiglins > 0 ? ChatFormatting.GOLD : ChatFormatting.RED);
+        return new TextComponent(String.valueOf(nearbyPiglins)).withStyle(nearbyPiglins > 0 ? ChatFormatting.GOLD : ChatFormatting.RED);
     }
 
     @Override
@@ -149,6 +150,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         renderer.vertex(x, y + height, 0.0).color(red, green, blue, alpha).endVertex();
         renderer.vertex(x + width, y + height, 0.0).color(red, green, blue, alpha).endVertex();
         renderer.vertex(x + width, y, 0.0).color(red, green, blue, alpha).endVertex();
-        BufferUploader.drawWithShader(renderer.end());
+        renderer.end();
+        BufferUploader.end(renderer);
     }
 }

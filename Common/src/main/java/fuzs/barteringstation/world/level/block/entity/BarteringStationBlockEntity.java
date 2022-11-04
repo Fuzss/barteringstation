@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -169,6 +170,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             if (!stack.isEmpty()) {
                 while (currentPiglin < piglins.size()) {
                     if (PiglinAiHelper.mobInteract(piglins.get(currentPiglin++), stack, pos)) {
+                        // only the item stack is changed, nothing in the container itself is updated, therefore manually mark block entity as changed
+                        blockEntity.setChanged();
                         blockEntity.barterDelay = BarteringStation.CONFIG.get(ServerConfig.class).barterDelay;
                         break;
                     }
@@ -197,7 +200,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     @Override
     protected Component getDefaultName() {
-        return Component.translatable("container.barteringstation.bartering_station");
+        return new TranslatableComponent("container.barteringstation.bartering_station");
     }
 
     @Override
