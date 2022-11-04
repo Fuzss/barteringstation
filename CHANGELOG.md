@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v4.0.3-1.19.2] - 2022-11-04
+### Fixed
+- Fixed an issue where the reduced item count for gold ingots after bartering in the bartering station wouldn't properly save
+
 ## [v4.0.2-1.19.2] - 2022-10-16
 ### Changed
 - Use a more generic hook for catching piglin barter results to be able to support mods such as [Piglin Proliferation]

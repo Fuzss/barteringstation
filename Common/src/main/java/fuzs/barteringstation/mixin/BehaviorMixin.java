@@ -14,6 +14,7 @@ import net.minecraft.world.entity.monster.piglin.Piglin;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -25,7 +26,9 @@ import java.util.UUID;
 
 @Mixin(Behavior.class)
 abstract class BehaviorMixin<E extends LivingEntity> {
+    @Unique
     private static final Map<MemoryModuleType<?>, MemoryStatus> ADMIRING_ITEM_ENTRY_CONDITION = ImmutableMap.of(MemoryModuleType.ADMIRING_ITEM, MemoryStatus.VALUE_ABSENT);
+
     @Shadow
     @Final
     protected Map<MemoryModuleType<?>, MemoryStatus> entryCondition;

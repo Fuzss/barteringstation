@@ -169,6 +169,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             if (!stack.isEmpty()) {
                 while (currentPiglin < piglins.size()) {
                     if (PiglinAiHelper.mobInteract(piglins.get(currentPiglin++), stack, pos)) {
+                        // only the item stack is changed, nothing in the container itself is updated, therefore manually mark block entity as changed
+                        blockEntity.setChanged();
                         blockEntity.barterDelay = BarteringStation.CONFIG.get(ServerConfig.class).barterDelay;
                         break;
                     }
