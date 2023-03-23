@@ -1,14 +1,12 @@
 package fuzs.barteringstation;
 
-import fuzs.barteringstation.init.FabricModRegistry;
-import fuzs.puzzleslib.core.CoreServices;
+import fuzs.puzzleslib.api.core.v1.ModConstructor;
 import net.fabricmc.api.ModInitializer;
 
 public class BarteringStationFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        CoreServices.FACTORIES.modConstructor(BarteringStation.MOD_ID).accept(new BarteringStation());
-        FabricModRegistry.touch();
+        ModConstructor.construct(BarteringStation.MOD_ID, BarteringStation::new);
     }
 }

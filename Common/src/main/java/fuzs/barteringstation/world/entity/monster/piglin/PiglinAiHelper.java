@@ -2,7 +2,7 @@ package fuzs.barteringstation.world.entity.monster.piglin;
 
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.core.ModServices;
+import fuzs.barteringstation.core.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -40,7 +40,7 @@ public class PiglinAiHelper extends PiglinAi {
     }
 
     private static void holdInOffHand(Piglin piglin, ItemStack stack) {
-        if (ModServices.ABSTRACTIONS.isPiglinCurrency(stack)) {
+        if (CommonAbstractions.INSTANCE.isPiglinCurrency(stack)) {
             piglin.setItemSlot(EquipmentSlot.OFFHAND, stack);
             piglin.setGuaranteedDrop(EquipmentSlot.OFFHAND);
         } else {

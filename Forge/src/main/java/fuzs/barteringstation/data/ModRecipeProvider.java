@@ -1,30 +1,31 @@
 package fuzs.barteringstation.data;
 
 import fuzs.barteringstation.init.ModRegistry;
-import net.minecraft.data.DataGenerator;
+import fuzs.puzzleslib.api.data.v1.AbstractRecipeProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 
 import java.util.function.Consumer;
 
-public class ModRecipeProvider extends RecipeProvider {
+public class ModRecipeProvider extends AbstractRecipeProvider {
 
-    public ModRecipeProvider(DataGenerator p_125973_) {
-        super(p_125973_);
+    public ModRecipeProvider(PackOutput packOutput) {
+        super(packOutput);
     }
 
     @Override
-    protected void buildCraftingRecipes(Consumer<FinishedRecipe> p_176532_) {
-        ShapedRecipeBuilder.shaped(ModRegistry.BARTERING_STATION_BLOCK.get())
+    protected void buildRecipes(Consumer<FinishedRecipe> exporter) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModRegistry.BARTERING_STATION_BLOCK.get())
                 .define('#', ItemTags.PLANKS)
                 .define('@', Items.GOLD_INGOT)
                 .pattern("@@")
                 .pattern("##")
                 .pattern("##")
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
-                .save(p_176532_);
+                .save(exporter);
     }
 }

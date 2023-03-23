@@ -1,9 +1,10 @@
 package fuzs.barteringstation.capability;
 
-import fuzs.puzzleslib.capability.data.CapabilityComponent;
+import fuzs.puzzleslib.api.capability.v2.data.CapabilityComponent;
 import net.minecraft.core.BlockPos;
 
 public interface BarteringStationCapability extends CapabilityComponent {
+
     BlockPos getBarteringStationPos();
 
     void setBarteringStationPos(BlockPos pos);

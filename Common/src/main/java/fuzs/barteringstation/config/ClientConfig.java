@@ -1,7 +1,7 @@
 package fuzs.barteringstation.config;
 
-import fuzs.puzzleslib.config.ConfigCore;
-import fuzs.puzzleslib.config.annotation.Config;
+import fuzs.puzzleslib.api.config.v3.Config;
+import fuzs.puzzleslib.api.config.v3.ConfigCore;
 
 public class ClientConfig implements ConfigCore {
     @Config(description = "Way of showing current cooldown of a bartering station.")

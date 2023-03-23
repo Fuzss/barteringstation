@@ -1,7 +1,7 @@
 package fuzs.barteringstation.client;
 
 import fuzs.barteringstation.BarteringStation;
-import fuzs.puzzleslib.client.core.ClientCoreServices;
+import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -12,6 +12,6 @@ public class BarteringStationForgeClient {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
-        ClientCoreServices.FACTORIES.clientModConstructor(BarteringStation.MOD_ID).accept(new BarteringStationClient());
+        ClientModConstructor.construct(BarteringStation.MOD_ID, BarteringStationClient::new);
     }
 }

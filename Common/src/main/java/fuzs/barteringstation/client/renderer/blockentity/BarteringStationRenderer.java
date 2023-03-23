@@ -1,7 +1,7 @@
 package fuzs.barteringstation.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -46,9 +46,9 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
         bookRotation *= -180.0F / (float) Math.PI;
         bookRotation -= 90.0F;
         bookRotation *= bookOpen;
-        matrixStackIn.mulPose(Vector3f.YP.rotationDegrees(bookRotation));
+        matrixStackIn.mulPose(Axis.YP.rotationDegrees(bookRotation));
         matrixStackIn.translate(0.0F, bookOpen, Math.sin(bookOpen * Math.PI));
-        matrixStackIn.mulPose(Vector3f.XP.rotationDegrees(-90.0F * (bookOpen - 1.0F)));
+        matrixStackIn.mulPose(Axis.XP.rotationDegrees(-90.0F * (bookOpen - 1.0F)));
         float hoveringHeight = (float) Math.sin(ageInTicks * 0.06F) * bookOpen * 0.2F;
         matrixStackIn.translate(0.0F, hoveringHeight, 0.0F);
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();

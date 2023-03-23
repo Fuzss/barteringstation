@@ -3,7 +3,7 @@ package fuzs.barteringstation.world.inventory;
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.core.ModServices;
+import fuzs.barteringstation.core.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.world.Container;
@@ -35,7 +35,7 @@ public class BarteringStationMenu extends AbstractContainerMenu {
                 
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return ModServices.ABSTRACTIONS.isPiglinCurrency(stack);
+                    return CommonAbstractions.INSTANCE.isPiglinCurrency(stack);
                 }
             });
         }
@@ -77,7 +77,7 @@ public class BarteringStationMenu extends AbstractContainerMenu {
                 }
                 slot.onQuickCraft(itemstack1, itemstack);
             } else if (index >= BarteringStationBlockEntity.ALL_SLOTS) {
-                if (ModServices.ABSTRACTIONS.isPiglinCurrency(itemstack1)) {
+                if (CommonAbstractions.INSTANCE.isPiglinCurrency(itemstack1)) {
                     if (!this.moveItemStackTo(itemstack1, 0, BarteringStationBlockEntity.CURRENCY_SLOTS, false)) {
                         return ItemStack.EMPTY;
                     }

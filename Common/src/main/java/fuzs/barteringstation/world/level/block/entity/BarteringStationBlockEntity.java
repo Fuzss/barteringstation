@@ -2,7 +2,7 @@ package fuzs.barteringstation.world.level.block.entity;
 
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.core.ModServices;
+import fuzs.barteringstation.core.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.entity.monster.piglin.PiglinAiHelper;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
@@ -28,8 +28,8 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalInt;
@@ -261,7 +261,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
         if (index >= 0 && index < CURRENCY_SLOTS) {
-            return ModServices.ABSTRACTIONS.isPiglinCurrency(stack);
+            return CommonAbstractions.INSTANCE.isPiglinCurrency(stack);
         }
         return false;
     }

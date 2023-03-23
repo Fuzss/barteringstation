@@ -1,21 +1,16 @@
 package fuzs.barteringstation.data;
 
-import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
 import fuzs.barteringstation.client.handler.PiglinHeadModelHandler;
 import fuzs.barteringstation.init.ModRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.model.generators.BlockStateProvider;
+import fuzs.puzzleslib.api.data.v1.AbstractModelProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraftforge.client.model.generators.ModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.apache.commons.lang3.ArrayUtils;
 
-public class ModBlockStateProvider extends BlockStateProvider {
+public class ModBlockStateProvider extends AbstractModelProvider {
 
-    public ModBlockStateProvider(DataGenerator gen, String modId, ExistingFileHelper exFileHelper) {
-        super(gen, modId, exFileHelper);
+    public ModBlockStateProvider(PackOutput packOutput, String modId, ExistingFileHelper fileHelper) {
+        super(packOutput, modId, fileHelper);
     }
 
     @Override
@@ -30,19 +25,5 @@ public class ModBlockStateProvider extends BlockStateProvider {
         ).texture("particle", this.modLoc("block/bartering_station_front")));
         this.itemModels().withExistingParent(this.name(ModRegistry.BARTERING_STATION_BLOCK.get()), this.extendKey(ModRegistry.BARTERING_STATION_BLOCK.get(), ModelProvider.BLOCK_FOLDER));
         this.itemModels().withExistingParent(PiglinHeadModelHandler.PIGLIN_ITEM_MODEL_LOCATION.toString(), this.mcLoc("template_skull"));
-    }
-
-    private ResourceLocation key(Block block) {
-        return Registry.BLOCK.getKey(block);
-    }
-
-    private ResourceLocation extendKey(Block block, String... extensions) {
-        ResourceLocation loc = this.key(block);
-        extensions = ArrayUtils.add(extensions, loc.getPath());
-        return new ResourceLocation(loc.getNamespace(), String.join("/", extensions));
-    }
-
-    private String name(Block block) {
-        return this.key(block).getPath();
     }
 }
