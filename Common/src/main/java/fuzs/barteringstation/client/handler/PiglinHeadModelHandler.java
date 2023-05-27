@@ -15,10 +15,10 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -76,7 +76,7 @@ public class PiglinHeadModelHandler {
 
     private static void applyTransformsAndRender(PoseStack poseStack, SkullModelBase skullModel, RenderType renderType, BakedModel bakedModel) {
         poseStack.pushPose();
-        bakedModel.getTransforms().getTransform(ItemTransforms.TransformType.GUI).apply(false, poseStack);
+        bakedModel.getTransforms().getTransform(ItemDisplayContext.GUI).apply(false, poseStack);
         poseStack.translate(-0.5D, -0.5D, -0.5D);
         renderSkullItemModel(poseStack, skullModel, renderType);
         poseStack.popPose();

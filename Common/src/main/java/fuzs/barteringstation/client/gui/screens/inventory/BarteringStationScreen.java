@@ -1,7 +1,8 @@
 package fuzs.barteringstation.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.client.handler.PiglinHeadModelHandler;
 import fuzs.barteringstation.client.init.ModClientRegistry;
@@ -9,6 +10,8 @@ import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.SkullModelBase;
@@ -64,7 +67,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, BARTERING_STATION_LOCATION);
-        this.blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         if (BarteringStation.CONFIG.get(ClientConfig.class).cooldownRenderType.arrows()) {
             this.renderBgCooldownArrows(poseStack);
         }
@@ -88,16 +91,16 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         posestack.translate(this.leftPos, this.topPos, blitOffset + 200.0);
         MultiBufferSource.BufferSource multibuffersource$buffersource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         Component component = makePiglinComponent(this.menu.getNearbyPiglins());
-        this.font.drawInBatch(component, (float) (posX + 19 - 2 - this.font.width(component)), (float) (posY + 6 + 3), -1, true, posestack.last().pose(), multibuffersource$buffersource, false, 0, 15728880);
+        this.font.drawInBatch(component, (float) (posX + 19 - 2 - this.font.width(component)), (float) (posY + 6 + 3), -1, true, posestack.last().pose(), multibuffersource$buffersource, Font.DisplayMode.NORMAL, 0, 15728880);
         multibuffersource$buffersource.endBatch();
         posestack.popPose();
     }
 
     private void renderBgCooldownArrows(PoseStack poseStack) {
         int arrow1Progress = this.menu.getTopArrowProgress();
-        this.blit(poseStack, this.leftPos + 49, this.topPos + 40, 176, 0, arrow1Progress, ARROW_SIZE_Y);
+        blit(poseStack, this.leftPos + 49, this.topPos + 40, 176, 0, arrow1Progress, ARROW_SIZE_Y);
         int arrow2Progress = this.menu.getBottomArrowProgress();
-        this.blit(poseStack, this.leftPos + 49 + ARROW_SIZE_X - arrow2Progress, this.topPos + 53, 176 + ARROW_SIZE_X - arrow2Progress, ARROW_SIZE_Y, arrow2Progress, ARROW_SIZE_Y);
+        blit(poseStack, this.leftPos + 49 + ARROW_SIZE_X - arrow2Progress, this.topPos + 53, 176 + ARROW_SIZE_X - arrow2Progress, ARROW_SIZE_Y, arrow2Progress, ARROW_SIZE_Y);
     }
 
     private void renderCooldownOverlays() {
@@ -111,7 +114,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
             for (int i = 0; i < BarteringStationBlockEntity.CURRENCY_SLOTS && i < this.menu.slots.size(); i++) {
                 Slot slot = this.menu.slots.get(i);
                 if (slot.isActive() && slot.hasItem()) {
-                    this.renderSlotCooldownOverlay(slot.x, slot.y, cooldownProgress);
+                    renderSlotCooldownOverlay(posestack, slot.x, slot.y, cooldownProgress);
                 }
             }
             posestack.popPose();
@@ -120,34 +123,11 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         }
     }
 
-    private void renderSlotCooldownOverlay(int posX, int posY, float cooldownProgress) {
-        if (cooldownProgress > 0.0F) {
-            this.setBlitOffset(100);
-            this.itemRenderer.blitOffset = 100.0F;
+    public static void renderSlotCooldownOverlay(PoseStack poseStack, int posX, int posY, float value) {
+        if (value > 0.0F) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            Tesselator tesselator1 = Tesselator.getInstance();
-            BufferBuilder bufferbuilder1 = tesselator1.getBuilder();
-            this.fillRect(bufferbuilder1, posX, posY + Mth.floor(16.0F * (1.0F - cooldownProgress)), 16, Mth.ceil(16.0F * cooldownProgress), 255, 255, 255, 127);
-            RenderSystem.enableTexture();
+            GuiComponent.fill(poseStack,posX, posY + Mth.floor(16.0F * (1.0F - value)), 16, Mth.ceil(16.0F * value), -2130706433);
             RenderSystem.enableDepthTest();
-            this.itemRenderer.blitOffset = 0.0F;
-            this.setBlitOffset(0);
         }
-    }
-
-    /**
-     * private method copied from {@link net.minecraft.client.renderer.entity.ItemRenderer}
-     */
-    private void fillRect(BufferBuilder renderer, int x, int y, int width, int height, int red, int green, int blue, int alpha) {
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        renderer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        renderer.vertex(x, y, 0.0).color(red, green, blue, alpha).endVertex();
-        renderer.vertex(x, y + height, 0.0).color(red, green, blue, alpha).endVertex();
-        renderer.vertex(x + width, y + height, 0.0).color(red, green, blue, alpha).endVertex();
-        renderer.vertex(x + width, y, 0.0).color(red, green, blue, alpha).endVertex();
-        BufferUploader.drawWithShader(renderer.end());
     }
 }

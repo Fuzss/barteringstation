@@ -5,13 +5,14 @@ import com.mojang.math.Axis;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 /**
  * mostly copied from Quark's matrix enchanting table by Vazkii
@@ -36,10 +37,10 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
         }
         float bookRotation = blockEntity.oRot + nextRotation * partialTicks;
         float bookOpen = Mth.lerp(partialTicks, blockEntity.oOpen, blockEntity.open);
-        this.renderItem(new ItemStack(Items.GOLD_INGOT), ageInTicks, bookOpen, bookRotation, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+        this.renderItem(new ItemStack(Items.GOLD_INGOT), ageInTicks, bookOpen, bookRotation, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn, blockEntity.getLevel());
     }
 
-    private void renderItem(ItemStack stack, float ageInTicks, float bookOpen, float bookRotation, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
+    private void renderItem(ItemStack stack, float ageInTicks, float bookOpen, float bookRotation, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, Level level) {
         matrixStackIn.pushPose();
         matrixStackIn.translate(0.5F, 1.03125F, 0.5F);
         matrixStackIn.scale(0.8F, 0.8F, 0.8F);
@@ -52,7 +53,7 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
         float hoveringHeight = (float) Math.sin(ageInTicks * 0.06F) * bookOpen * 0.2F;
         matrixStackIn.translate(0.0F, hoveringHeight, 0.0F);
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
-        itemRenderer.renderStatic(stack, ItemTransforms.TransformType.FIXED, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn, 0);
+        itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn, level, 0);
         matrixStackIn.popPose();
     }
 

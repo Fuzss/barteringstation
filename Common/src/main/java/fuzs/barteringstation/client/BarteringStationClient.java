@@ -9,8 +9,6 @@ import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.api.client.core.v1.context.*;
 import fuzs.puzzleslib.api.core.v1.context.ModLifecycleContext;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 
 public class BarteringStationClient implements ClientModConstructor {
@@ -42,7 +40,7 @@ public class BarteringStationClient implements ClientModConstructor {
 
     @Override
     public void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsContext context) {
-        context.registerBuildListener(CreativeModeTabs.FUNCTIONAL_BLOCKS, (FeatureFlagSet featureFlagSet, CreativeModeTab.Output output, boolean bl) -> {
+        context.registerBuildListener(CreativeModeTabs.FUNCTIONAL_BLOCKS, (itemDisplayParameters, output) -> {
             output.accept(ModRegistry.BARTERING_STATION_ITEM.get());
         });
     }
