@@ -16,5 +16,6 @@
   ],
   "result": {
     "item": "barteringstation:bartering_station"
-  }
+  },
+  "show_notification": true
 }

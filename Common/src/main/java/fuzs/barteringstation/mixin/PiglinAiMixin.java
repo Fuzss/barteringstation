@@ -17,17 +17,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Mixin(PiglinAi.class)
-public abstract class PiglinAiMixin {
+abstract class PiglinAiMixin {
 
     @Inject(method = "stopHoldingOffHandItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/piglin/PiglinAi;getBarterResponseItems(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Ljava/util/List;"), cancellable = true)
-    private static void stopHoldingOffHandItem$inject$invoke$getBarterResponseItems(Piglin piglin, boolean finishedHolding, CallbackInfo callback) {
-        if (piglin.level.isClientSide) return;
+    private static void stopHoldingOffHandItem(Piglin piglin, boolean finishedHolding, CallbackInfo callback) {
+        if (piglin.level().isClientSide) return;
         Optional<BarteringStationCapability> optional = ModRegistry.BARTERING_STATION_CAPABILITY.maybeGet(piglin);
         if (optional.isPresent() && optional.map(BarteringStationCapability::hasBarteringStationPos).orElseThrow()) {
             BarteringStationCapability capability = optional.orElseThrow(IllegalStateException::new);
             BlockPos pos = capability.getBarteringStationPos();
             capability.clearBarteringStationPos();
-            piglin.level.getBlockEntity(pos, ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.get()).ifPresent(blockEntity -> {
+            piglin.level().getBlockEntity(pos, ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.get()).ifPresent(blockEntity -> {
                 List<ItemStack> items = getBarterResponseItems(piglin);
                 items.removeIf(blockEntity::placeBarterResponseItem);
                 if (!items.isEmpty()) {

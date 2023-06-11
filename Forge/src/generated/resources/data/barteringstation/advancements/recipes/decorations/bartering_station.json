@@ -30,5 +30,6 @@
     "recipes": [
       "barteringstation:bartering_station"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

@@ -18,12 +18,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 
 public class ModRegistry {
     static final RegistryManager REGISTRY = RegistryManager.instant(BarteringStation.MOD_ID);
-    public static final RegistryReference<Block> BARTERING_STATION_BLOCK = REGISTRY.registerBlock("bartering_station", () -> new BarteringStationBlock(BlockBehaviour.Properties.of(Material.NETHER_WOOD, MaterialColor.CRIMSON_STEM).strength(2.0F, 3.0F).sound(SoundType.WOOD)));
+    public static final RegistryReference<Block> BARTERING_STATION_BLOCK = REGISTRY.registerBlock("bartering_station", () -> new BarteringStationBlock(BlockBehaviour.Properties.of().mapColor(MapColor.CRIMSON_STEM).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).sound(SoundType.NETHER_WOOD)));
     public static final RegistryReference<Item> BARTERING_STATION_ITEM = REGISTRY.registerBlockItem(BARTERING_STATION_BLOCK);
     public static final RegistryReference<BlockEntityType<BarteringStationBlockEntity>> BARTERING_STATION_BLOCK_ENTITY_TYPE = REGISTRY.whenNotOn(ModLoader.FORGE).registerBlockEntityType("bartering_station", () -> BlockEntityType.Builder.of(BarteringStationBlockEntity::new, BARTERING_STATION_BLOCK.get()));
     public static final RegistryReference<MenuType<BarteringStationMenu>> BARTERING_STATION_MENU_TYPE = REGISTRY.registerMenuType("bartering_station", () -> BarteringStationMenu::new);

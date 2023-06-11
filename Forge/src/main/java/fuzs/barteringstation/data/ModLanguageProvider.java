@@ -14,6 +14,6 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
     protected void addTranslations() {
         this.add(ModRegistry.BARTERING_STATION_BLOCK.get(), "Bartering Station");
         this.add("container.barteringstation.bartering_station", "Bartering Station");
-        this.add("gui.barteringstation.bartering_station.piglins", "Found %s piglins nearby for bartering");
+        this.add("gui.barteringstation.bartering_station.piglins", "Found %s piglin(s) nearby for bartering");
     }
 }
