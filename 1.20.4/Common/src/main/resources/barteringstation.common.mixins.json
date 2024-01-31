@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_17",
+  "package": "fuzs.barteringstation.mixin",
+  "refmap": "barteringstation.refmap.json",
+  "plugin": "fuzs.barteringstation.mixin.ModMixinConfigPlugin",
+  "mixins": [
+    "PiglinAiMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
