@@ -4,8 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import fuzs.barteringstation.BarteringStation;
-import fuzs.barteringstation.client.handler.PiglinHeadModelHandler;
-import fuzs.barteringstation.client.init.ModClientRegistry;
+import fuzs.barteringstation.client.handler.PiglinHeadModelRenderer;
 import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
@@ -25,9 +24,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
 public class BarteringStationScreen extends AbstractContainerScreen<BarteringStationMenu> {
+    public static final ResourceLocation BARTERING_STATION_LOCATION = BarteringStation.id("textures/gui/container/bartering_station.png");
     public static final int ARROW_SIZE_X = 24;
     public static final int ARROW_SIZE_Y = 18;
-    private static final ResourceLocation BARTERING_STATION_LOCATION = new ResourceLocation(BarteringStation.MOD_ID, "textures/gui/container/bartering_station.png");
+
     private SkullModelBase skullModel;
 
     public BarteringStationScreen(BarteringStationMenu menu, Inventory inventory, Component title) {
@@ -41,13 +41,12 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
     @Override
     protected void init() {
         super.init();
-        this.skullModel = new SkullModel(this.minecraft.getEntityModels().bakeLayer(ModClientRegistry.PIGLIN_HEAD_MODEL_LAYER_LOCATION));
+        this.skullModel = new SkullModel(this.minecraft.getEntityModels().bakeLayer(PiglinHeadModelRenderer.PIGLIN_HEAD_MODEL_LAYER_LOCATION));
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
         if (BarteringStation.CONFIG.get(ClientConfig.class).cooldownRenderType.overlay()) {
             this.renderCooldownOverlays(guiGraphics);
@@ -66,7 +65,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         guiGraphics.blit(BARTERING_STATION_LOCATION, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         if (BarteringStation.CONFIG.get(ClientConfig.class).cooldownRenderType.arrows()) {
-            this.renderBgCooldownArrows(guiGraphics);
+            this.renderCooldownArrows(guiGraphics);
         }
         this.renderPiglinHead(53, 20, 150);
         this.decoratePiglinHead(53, 20, 150);
@@ -76,7 +75,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
         modelViewStack.translate(this.leftPos, this.topPos, 0.0);
-        PiglinHeadModelHandler.INSTANCE.renderPiglinHeadGuiModel(posX, posY, blitOffset, this.skullModel);
+        PiglinHeadModelRenderer.INSTANCE.renderPiglinHeadGuiModel(posX, posY, blitOffset, this.skullModel);
         modelViewStack.popPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.enableDepthTest();
@@ -93,7 +92,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         posestack.popPose();
     }
 
-    private void renderBgCooldownArrows(GuiGraphics guiGraphics) {
+    private void renderCooldownArrows(GuiGraphics guiGraphics) {
         int arrow1Progress = this.menu.getTopArrowProgress();
         guiGraphics.blit(BARTERING_STATION_LOCATION, this.leftPos + 49, this.topPos + 40, 176, 0, arrow1Progress, ARROW_SIZE_Y);
         int arrow2Progress = this.menu.getBottomArrowProgress();

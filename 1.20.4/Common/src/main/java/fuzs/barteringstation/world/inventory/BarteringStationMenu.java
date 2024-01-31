@@ -25,14 +25,19 @@ public class BarteringStationMenu extends AbstractContainerMenu {
     }
 
     public BarteringStationMenu(int containerId, Inventory inventory, Container container, ContainerData containerData) {
-        super(ModRegistry.BARTERING_STATION_MENU_TYPE.get(), containerId);
+        super(ModRegistry.BARTERING_STATION_MENU_TYPE.value(), containerId);
         checkContainerSize(container, BarteringStationBlockEntity.ALL_SLOTS);
         checkContainerDataCount(containerData, BarteringStationBlockEntity.DATA_SLOTS);
         this.container = container;
         this.data = containerData;
+        this.addSlots(container, inventory);
+        this.addDataSlots(containerData);
+    }
+
+    private void addSlots(Container container, Inventory inventory) {
         for (int i = 0; i < BarteringStationBlockEntity.CURRENCY_SLOTS; i++) {
             this.addSlot(new Slot(container, i, 11 + (i % 2) * 18, 17 + (i / 2) * 18) {
-                
+
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return CommonAbstractions.INSTANCE.isPiglinCurrency(stack);
@@ -41,7 +46,7 @@ public class BarteringStationMenu extends AbstractContainerMenu {
         }
         for (int i = BarteringStationBlockEntity.CURRENCY_SLOTS; i < BarteringStationBlockEntity.ALL_SLOTS; i++) {
             this.addSlot(new Slot(container, i, 77 + ((i - BarteringStationBlockEntity.CURRENCY_SLOTS) % 5) * 18, 17 + ((i - BarteringStationBlockEntity.CURRENCY_SLOTS) / 5) * 18) {
-                
+
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return false;
@@ -56,7 +61,6 @@ public class BarteringStationMenu extends AbstractContainerMenu {
         for (int k = 0; k < 9; ++k) {
             this.addSlot(new Slot(inventory, k, 8 + k * 18, 142));
         }
-        this.addDataSlots(containerData);
     }
 
     @Override

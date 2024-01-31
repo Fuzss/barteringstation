@@ -1,7 +1,9 @@
 package fuzs.barteringstation.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
+import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -16,18 +18,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
-public class BarteringStationBlock extends BaseEntityBlock {
+public class BarteringStationBlock extends BaseEntityBlock implements TickingEntityBlock<BarteringStationBlockEntity> {
+    public static final MapCodec<BarteringStationBlock> CODEC = simpleCodec(BarteringStationBlock::new);
 
-    public BarteringStationBlock(Properties p_49795_) {
-        super(p_49795_);
+    public BarteringStationBlock(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -35,20 +41,13 @@ public class BarteringStationBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
-    @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-        return ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.get().create(pPos, pState);
+    public BlockEntityType<? extends BarteringStationBlockEntity> getBlockEntityType() {
+        return ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.value();
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        return createTickerHelper(pBlockEntityType, ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.get(), pLevel.isClientSide ? BarteringStationBlockEntity::clientTick : BarteringStationBlockEntity::serverTick);
-    }
-
-    @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult hitResult) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
@@ -61,7 +60,7 @@ public class BarteringStationBlock extends BaseEntityBlock {
     }
     
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity entity, ItemStack stack) {
+    public void setPlacedBy(Level level, BlockPos pos, BlockState blockState, LivingEntity entity, ItemStack stack) {
         if (stack.hasCustomHoverName()) {
             if (level.getBlockEntity(pos) instanceof BarteringStationBlockEntity blockEntity) {
                 blockEntity.setCustomName(stack.getHoverName());
@@ -70,33 +69,33 @@ public class BarteringStationBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState p_48713_, Level p_48714_, BlockPos p_48715_, BlockState p_48716_, boolean p_48717_) {
-        if (!p_48713_.is(p_48716_.getBlock())) {
-            BlockEntity blockentity = p_48714_.getBlockEntity(p_48715_);
+    public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState newState, boolean movedByPiston) {
+        if (!blockState.is(newState.getBlock())) {
+            BlockEntity blockentity = level.getBlockEntity(blockPos);
             if (blockentity instanceof BarteringStationBlockEntity) {
-                if (p_48714_ instanceof ServerLevel) {
-                    Containers.dropContents(p_48714_, p_48715_, (BarteringStationBlockEntity)blockentity);
+                if (level instanceof ServerLevel) {
+                    Containers.dropContents(level, blockPos, (BarteringStationBlockEntity)blockentity);
                 }
 
-                p_48714_.updateNeighbourForOutputSignal(p_48715_, this);
+                level.updateNeighbourForOutputSignal(blockPos, this);
             }
 
-            super.onRemove(p_48713_, p_48714_, p_48715_, p_48716_, p_48717_);
+            super.onRemove(blockState, level, blockPos, newState, movedByPiston);
         }
     }
 
     @Override
-    public boolean hasAnalogOutputSignal(BlockState p_48700_) {
+    public boolean hasAnalogOutputSignal(BlockState blockState) {
         return true;
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState p_48702_, Level p_48703_, BlockPos p_48704_) {
-        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(p_48703_.getBlockEntity(p_48704_));
+    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos) {
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(blockPos));
     }
 
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter blockReader, BlockPos pos, PathComputationType pathType) {
+    public boolean isPathfindable(BlockState blockState, BlockGetter level, BlockPos pos, PathComputationType pathComputationType) {
         return false;
     }
 }

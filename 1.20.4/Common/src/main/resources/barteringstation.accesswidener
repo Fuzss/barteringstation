@@ -1,0 +1,4 @@
+accessWidener   v2  named
+accessible  method  net/minecraft/world/entity/monster/piglin/PiglinAi  canAdmire   (Lnet/minecraft/world/entity/monster/piglin/Piglin;Lnet/minecraft/world/item/ItemStack;)Z
+accessible  method  net/minecraft/world/entity/monster/piglin/PiglinAi  holdInOffhand   (Lnet/minecraft/world/entity/monster/piglin/Piglin;Lnet/minecraft/world/item/ItemStack;)V
+accessible  method  net/minecraft/world/entity/monster/piglin/PiglinAi  stopWalking (Lnet/minecraft/world/entity/monster/piglin/Piglin;)V
