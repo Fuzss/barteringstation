@@ -6,10 +6,12 @@ import fuzs.barteringstation.core.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.puzzleslib.api.block.v1.entity.TickingBlockEntity;
-import fuzs.puzzleslib.api.container.v1.ContainerImpl;
+import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
+import fuzs.puzzleslib.api.container.v1.ListBackedContainer;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -39,7 +41,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
 
-public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ContainerImpl, TickingBlockEntity {
+public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ListBackedContainer, TickingBlockEntity {
     public static final MutableComponent CONTAINER_BARTERING_STATION = Component.translatable(
             "container.bartering_station");
     public static final String TAG_DELAY = BarteringStation.id("delay").toString();
@@ -55,7 +57,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     private final BarteringStationAnimationController animationController;
     private final ContainerData dataAccess;
-    private NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
+    private final NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
     private int barterDelay;
     private int nearbyPiglins;
 
@@ -90,24 +92,34 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(tag, this.items);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        this.items.clear();
+        ContainerHelper.loadAllItems(tag, this.items, registries);
         this.barterDelay = tag.getShort(TAG_DELAY);
 
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        ContainerHelper.saveAllItems(tag, this.items);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, this.items, registries);
         tag.putShort(TAG_DELAY, (short) this.barterDelay);
     }
 
     @Override
     protected Component getDefaultName() {
         return CONTAINER_BARTERING_STATION;
+    }
+
+    @Override
+    protected NonNullList<ItemStack> getItems() {
+        return this.getContainerItems();
+    }
+
+    @Override
+    protected void setItems(NonNullList<ItemStack> items) {
+        ContainerMenuHelper.copyItemsIntoList(items, this.getContainerItems());
     }
 
     @Override
@@ -217,7 +229,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     @Override
-    public NonNullList<ItemStack> getItems() {
+    public NonNullList<ItemStack> getContainerItems() {
         return this.items;
     }
 
@@ -263,11 +275,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         ItemStack stackInSlot = this.getItem(targetSlot);
         ItemStack stackToInsert;
         if (stackInSlot.isEmpty()) {
-            stackToInsert = stackToMerge.copy();
-            stackToMerge.setCount(0);
-            if (stackToMerge.hasTag()) {
-                stackToInsert.setTag(stackToMerge.getTag().copy());
-            }
+            stackToInsert = stackToMerge.copyAndClear();
         } else {
             stackToInsert = stackInSlot.copy();
             int transferAmount = stackToMerge.getCount();
@@ -279,7 +287,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     private boolean hasSpaceForItem(ItemStack stack1, ItemStack stack2) {
-        return !stack1.isEmpty() && ItemStack.isSameItemSameTags(stack1,
+        return !stack1.isEmpty() && ItemStack.isSameItemSameComponents(stack1,
                 stack2
         ) && stack1.isStackable() && stack1.getCount() < stack1.getMaxStackSize() && stack1.getCount() < this.getMaxStackSize();
     }

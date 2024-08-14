@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 public class FabricAbstractions implements CommonAbstractions {
 
     @Override
-    public boolean isPiglinCurrency(ItemStack stack) {
-        return stack.getItem() == PiglinAi.BARTERING_ITEM;
+    public boolean isPiglinCurrency(ItemStack itemStack) {
+        return itemStack.getItem() == PiglinAi.BARTERING_ITEM;
     }
 }

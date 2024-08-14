@@ -3,6 +3,7 @@ package fuzs.barteringstation.capability;
 import fuzs.barteringstation.BarteringStation;
 import fuzs.puzzleslib.api.capability.v3.data.CapabilityComponent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
@@ -31,7 +32,7 @@ public class BarteringStationCapability extends CapabilityComponent<Piglin> {
     }
 
     @Override
-    public void write(CompoundTag tag) {
+    public void write(CompoundTag tag, HolderLookup.Provider registries) {
         if (this.pos != null) {
             ListTag listTag = new ListTag();
             listTag.add(IntTag.valueOf(this.pos.getX()));
@@ -42,7 +43,7 @@ public class BarteringStationCapability extends CapabilityComponent<Piglin> {
     }
 
     @Override
-    public void read(CompoundTag tag) {
+    public void read(CompoundTag tag, HolderLookup.Provider registries) {
         if (tag.contains(TAG_POSITION, Tag.TAG_LIST)) {
             ListTag listTag = tag.getList(TAG_POSITION, Tag.TAG_INT);
             this.pos = new BlockPos(listTag.getInt(0), listTag.getInt(1), listTag.getInt(2));

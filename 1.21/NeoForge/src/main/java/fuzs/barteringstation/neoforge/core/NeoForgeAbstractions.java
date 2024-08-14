@@ -6,7 +6,7 @@ import net.minecraft.world.item.ItemStack;
 public class NeoForgeAbstractions implements CommonAbstractions {
 
     @Override
-    public boolean isPiglinCurrency(ItemStack stack) {
-        return stack.isPiglinCurrency();
+    public boolean isPiglinCurrency(ItemStack itemStack) {
+        return itemStack.isPiglinCurrency();
     }
 }
