@@ -3,16 +3,13 @@ package fuzs.barteringstation.world.level.block;
 import com.mojang.serialization.MapCodec;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
-import fuzs.puzzleslib.api.block.v1.entity.BlockEntityHelper;
 import fuzs.puzzleslib.api.block.v1.entity.TickingEntityBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -55,11 +52,6 @@ public class BarteringStationBlock extends BaseEntityBlock implements TickingEnt
 
             return InteractionResult.CONSUME;
         }
-    }
-    
-    @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState blockState, LivingEntity entity, ItemStack stack) {
-        BlockEntityHelper.setCustomName(stack, level, pos, BarteringStationBlockEntity.class);
     }
 
     @Override
