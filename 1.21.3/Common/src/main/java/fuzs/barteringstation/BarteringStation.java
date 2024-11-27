@@ -21,7 +21,7 @@ public class BarteringStation implements ModConstructor {
 
     @Override
     public void onConstructMod() {
-        ModRegistry.touch();
+        ModRegistry.bootstrap();
     }
 
     @Override

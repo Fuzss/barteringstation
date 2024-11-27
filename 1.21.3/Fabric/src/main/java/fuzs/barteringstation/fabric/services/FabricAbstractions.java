@@ -1,6 +1,6 @@
-package fuzs.barteringstation.fabric.core;
+package fuzs.barteringstation.fabric.services;
 
-import fuzs.barteringstation.core.CommonAbstractions;
+import fuzs.barteringstation.services.CommonAbstractions;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.item.ItemStack;
 

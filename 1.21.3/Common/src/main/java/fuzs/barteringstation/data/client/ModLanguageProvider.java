@@ -16,6 +16,6 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
     public void addTranslations(TranslationBuilder builder) {
         builder.add(ModRegistry.BARTERING_STATION_BLOCK.value(), "Bartering Station");
         builder.add(BarteringStationBlockEntity.CONTAINER_BARTERING_STATION, "Bartering Station");
-        builder.add(BarteringStationScreen.KEY_NEARBY_PIGLINS, "Found %s piglin(s) nearby for bartering");
+        builder.add(BarteringStationScreen.KEY_NEARBY_PIGLINS, "%sx %s");
     }
 }

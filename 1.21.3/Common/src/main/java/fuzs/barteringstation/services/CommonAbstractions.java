@@ -1,4 +1,4 @@
-package fuzs.barteringstation.core;
+package fuzs.barteringstation.services;
 
 import fuzs.puzzleslib.api.core.v1.ServiceProviderHelper;
 import net.minecraft.world.item.ItemStack;

@@ -1,7 +1,7 @@
 package fuzs.barteringstation.mixin;
 
-import fuzs.barteringstation.capability.BarteringStationCapability;
 import fuzs.barteringstation.init.ModRegistry;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
@@ -17,23 +17,26 @@ import java.util.List;
 @Mixin(PiglinAi.class)
 abstract class PiglinAiMixin {
 
-    @Inject(method = "stopHoldingOffHandItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/monster/piglin/PiglinAi;getBarterResponseItems(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Ljava/util/List;"), cancellable = true)
-    private static void stopHoldingOffHandItem(Piglin piglin, boolean shouldBarter, CallbackInfo callback) {
-        if (!piglin.level().isClientSide) {
-            BarteringStationCapability capability = ModRegistry.BARTERING_STATION_CAPABILITY.get(piglin);
-            if (capability.getBarteringStationPos() != null) {
-                piglin.level().getBlockEntity(capability.getBarteringStationPos(), ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.value()).ifPresent(blockEntity -> {
-                    List<ItemStack> items = getBarterResponseItems(piglin);
-                    items.removeIf(blockEntity::placeBarterResponseItem);
-                    if (!items.isEmpty()) {
-                        throwItems(piglin, items);
-                    } else {
-                        piglin.swing(InteractionHand.OFF_HAND);
-                    }
-                    callback.cancel();
-                });
-                capability.setBarteringStationPos(null);
-            }
+    @Inject(
+            method = "stopHoldingOffHandItem", at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/monster/piglin/PiglinAi;getBarterResponseItems(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Ljava/util/List;"
+    ), cancellable = true
+    )
+    private static void stopHoldingOffHandItem(ServerLevel serverLevel, Piglin piglin, boolean shouldBarter, CallbackInfo callback) {
+        if (ModRegistry.BARTERING_STATION_ATTACHMENT_TYPE.has(piglin)) {
+            serverLevel.getBlockEntity(ModRegistry.BARTERING_STATION_ATTACHMENT_TYPE.get(piglin),
+                    ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.value()).ifPresent(blockEntity -> {
+                List<ItemStack> items = getBarterResponseItems(piglin);
+                items.removeIf(blockEntity::placeBarterResponseItem);
+                if (!items.isEmpty()) {
+                    throwItems(piglin, items);
+                } else {
+                    piglin.swing(InteractionHand.OFF_HAND);
+                }
+                callback.cancel();
+            });
+            ModRegistry.BARTERING_STATION_ATTACHMENT_TYPE.set(piglin, null);
         }
     }
 

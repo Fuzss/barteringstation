@@ -2,7 +2,7 @@ package fuzs.barteringstation.world.level.block.entity;
 
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.core.CommonAbstractions;
+import fuzs.barteringstation.services.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.puzzleslib.api.block.v1.entity.TickingBlockEntity;
@@ -16,6 +16,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -168,7 +169,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             ItemStack stack = this.getItem(i);
             if (!stack.isEmpty()) {
                 while (currentPiglin < piglins.size()) {
-                    if (mobInteract(piglins.get(currentPiglin++), stack, pos)) {
+                    if (mobInteract((ServerLevel) this.getLevel(), piglins.get(currentPiglin++), stack, pos)) {
                         // only the item stack is changed, nothing in the container itself is updated, therefore manually mark block entity as changed
                         this.setChanged();
                         this.barterDelay = BarteringStation.CONFIG.get(ServerConfig.class).barterDelay;
@@ -188,13 +189,13 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         return OptionalInt.empty();
     }
 
-    private static boolean mobInteract(Piglin piglin, ItemStack itemStack, BlockPos blockPos) {
+    private static boolean mobInteract(ServerLevel serverLevel, Piglin piglin, ItemStack itemStack, BlockPos blockPos) {
         if (PiglinAi.canAdmire(piglin, itemStack)) {
             ItemStack currencyStack = itemStack.split(1);
-            PiglinAi.holdInOffhand(piglin, currencyStack);
+            PiglinAi.holdInOffhand(serverLevel, piglin, currencyStack);
             admireGoldItem(piglin);
             PiglinAi.stopWalking(piglin);
-            ModRegistry.BARTERING_STATION_CAPABILITY.get(piglin).setBarteringStationPos(blockPos);
+            ModRegistry.BARTERING_STATION_ATTACHMENT_TYPE.set(piglin, blockPos);
             return true;
         }
         return false;

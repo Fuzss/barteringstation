@@ -3,7 +3,7 @@ package fuzs.barteringstation.world.inventory;
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.client.gui.screens.inventory.BarteringStationScreen;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.core.CommonAbstractions;
+import fuzs.barteringstation.services.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
 import net.minecraft.world.Container;

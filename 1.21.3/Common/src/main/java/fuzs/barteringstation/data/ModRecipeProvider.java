@@ -17,13 +17,15 @@ public class ModRecipeProvider extends AbstractRecipeProvider {
 
     @Override
     public void addRecipes(RecipeOutput recipeOutput) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModRegistry.BARTERING_STATION_BLOCK.value())
+        ShapedRecipeBuilder.shaped(this.items(),
+                        RecipeCategory.DECORATIONS,
+                        ModRegistry.BARTERING_STATION_BLOCK.value())
                 .define('#', ItemTags.PLANKS)
                 .define('@', Items.GOLD_INGOT)
                 .pattern("@@")
                 .pattern("##")
                 .pattern("##")
-                .unlockedBy(getHasName(Items.GOLD_INGOT), has(Items.GOLD_INGOT))
+                .unlockedBy(getHasName(Items.GOLD_INGOT), this.has(Items.GOLD_INGOT))
                 .save(recipeOutput);
     }
 }
