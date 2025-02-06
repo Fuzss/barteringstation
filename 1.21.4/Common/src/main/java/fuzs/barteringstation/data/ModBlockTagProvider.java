@@ -16,6 +16,6 @@ public class ModBlockTagProvider extends AbstractTagProvider<Block> {
 
     @Override
     public void addTags(HolderLookup.Provider provider) {
-        this.add(BlockTags.MINEABLE_WITH_AXE).add(ModRegistry.BARTERING_STATION_BLOCK.value());
+        this.tag(BlockTags.MINEABLE_WITH_AXE).add(ModRegistry.BARTERING_STATION_BLOCK.value());
     }
 }
