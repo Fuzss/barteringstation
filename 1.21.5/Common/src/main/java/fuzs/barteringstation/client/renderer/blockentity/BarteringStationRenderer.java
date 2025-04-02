@@ -14,10 +14,12 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * mostly copied from Quark's matrix enchanting table by Vazkii
- * <a href="https://github.com/Vazkii/Quark/blob/master/src/main/java/vazkii/quark/addons/oddities/client/render/MatrixEnchantingTableTileEntityRenderer.java">MatrixEnchantingTableTileEntityRenderer.java</a>
+ * <a
+ * href="https://github.com/Vazkii/Quark/blob/master/src/main/java/vazkii/quark/addons/oddities/client/render/MatrixEnchantingTableTileEntityRenderer.java">MatrixEnchantingTableTileEntityRenderer.java</a>
  */
 public class BarteringStationRenderer implements BlockEntityRenderer<BarteringStationBlockEntity> {
     private final ItemRenderer itemRenderer;
@@ -27,9 +29,10 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
     }
 
     @Override
-    public void render(BarteringStationBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay) {
+    public void render(BarteringStationBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay, Vec3 cameraPosition) {
         // light is normally always 0 since it checks inside the crafting table block which is solid, but contents are rendered in the block above
-        packedLight = blockEntity.getLevel() != null ? LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().above()) : 15728880;
+        packedLight = blockEntity.getLevel() != null ?
+                LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().above()) : 15728880;
         BarteringStationAnimationController animationController = blockEntity.getAnimationController();
         float ageInTicks = animationController.time + partialTick;
         float nextRotation = animationController.rot - animationController.oRot;
@@ -41,7 +44,15 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
         }
         float bookRotation = animationController.oRot + nextRotation * partialTick;
         float bookOpen = Mth.lerp(partialTick, animationController.oOpen, animationController.open);
-        this.renderItem(new ItemStack(Items.GOLD_INGOT), ageInTicks, bookOpen, bookRotation, poseStack, multiBufferSource, packedLight, packedOverlay, blockEntity.getLevel());
+        this.renderItem(new ItemStack(Items.GOLD_INGOT),
+                ageInTicks,
+                bookOpen,
+                bookRotation,
+                poseStack,
+                multiBufferSource,
+                packedLight,
+                packedOverlay,
+                blockEntity.getLevel());
     }
 
     private void renderItem(ItemStack itemStack, float ageInTicks, float bookOpen, float bookRotation, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, int packedOverlay, Level level) {
@@ -56,7 +67,14 @@ public class BarteringStationRenderer implements BlockEntityRenderer<BarteringSt
         poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F * (bookOpen - 1.0F)));
         float hoveringHeight = (float) Math.sin(ageInTicks * 0.06F) * bookOpen * 0.2F;
         poseStack.translate(0.0F, hoveringHeight, 0.0F);
-        this.itemRenderer.renderStatic(itemStack, ItemDisplayContext.FIXED, packedLight, packedOverlay, poseStack, multiBufferSource, level, 0);
+        this.itemRenderer.renderStatic(itemStack,
+                ItemDisplayContext.FIXED,
+                packedLight,
+                packedOverlay,
+                poseStack,
+                multiBufferSource,
+                level,
+                0);
         poseStack.popPose();
     }
 }

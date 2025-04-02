@@ -2,8 +2,8 @@ package fuzs.barteringstation.world.level.block.entity;
 
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ServerConfig;
-import fuzs.barteringstation.services.CommonAbstractions;
 import fuzs.barteringstation.init.ModRegistry;
+import fuzs.barteringstation.services.CommonAbstractions;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.puzzleslib.api.block.v1.entity.TickingBlockEntity;
 import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
@@ -97,7 +97,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         super.loadAdditional(tag, registries);
         this.items.clear();
         ContainerHelper.loadAllItems(tag, this.items, registries);
-        this.barterDelay = tag.getShort(TAG_DELAY);
+        this.barterDelay = tag.getShortOr(TAG_DELAY, (short) 0);
 
     }
 
@@ -155,10 +155,8 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         int verticalRange = BarteringStation.CONFIG.get(ServerConfig.class).verticalRange;
         return level.getEntitiesOfClass(Piglin.class,
                 new AABB(vec3.add(-horizontalRange, -verticalRange, -horizontalRange),
-                        vec3.add(horizontalRange, verticalRange, horizontalRange)
-                ),
-                AbstractPiglin::isAdult
-        );
+                        vec3.add(horizontalRange, verticalRange, horizontalRange)),
+                AbstractPiglin::isAdult);
     }
 
     private void barterWithPiglins(BlockPos pos, List<Piglin> piglins) {
@@ -206,8 +204,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         livingEntity.getBrain()
                 .setMemoryWithExpiry(MemoryModuleType.ADMIRING_ITEM,
                         true,
-                        BarteringStation.CONFIG.get(ServerConfig.class).barterDelay / 2
-                );
+                        BarteringStation.CONFIG.get(ServerConfig.class).barterDelay / 2);
     }
 
     public BarteringStationAnimationController getAnimationController() {
@@ -288,8 +285,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     private boolean hasSpaceForItem(ItemStack stack1, ItemStack stack2) {
-        return !stack1.isEmpty() && ItemStack.isSameItemSameComponents(stack1,
-                stack2
-        ) && stack1.isStackable() && stack1.getCount() < stack1.getMaxStackSize() && stack1.getCount() < this.getMaxStackSize();
+        return !stack1.isEmpty() && ItemStack.isSameItemSameComponents(stack1, stack2) && stack1.isStackable() &&
+                stack1.getCount() < stack1.getMaxStackSize() && stack1.getCount() < this.getMaxStackSize();
     }
 }

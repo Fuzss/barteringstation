@@ -5,7 +5,7 @@ import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
-import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
+import fuzs.puzzleslib.api.client.gui.v2.ScreenHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -117,8 +117,6 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         if (cooldownProgress > 0.0F && cooldownProgress < 1.0F) {
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(this.leftPos, this.topPos, 0.0);
-            RenderSystem.disableDepthTest();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             for (int i = 0; i < BarteringStationBlockEntity.CURRENCY_SLOTS && i < this.menu.slots.size(); i++) {
                 Slot slot = this.menu.slots.get(i);
                 if (slot.isActive() && slot.hasItem()) {
@@ -132,7 +130,6 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
                 }
             }
             guiGraphics.pose().popPose();
-            RenderSystem.enableDepthTest();
         }
     }
 }

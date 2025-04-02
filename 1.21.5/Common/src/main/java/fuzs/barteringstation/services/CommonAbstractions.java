@@ -6,5 +6,6 @@ import net.minecraft.world.item.ItemStack;
 public interface CommonAbstractions {
     CommonAbstractions INSTANCE = ServiceProviderHelper.load(CommonAbstractions.class);
 
+    @Deprecated
     boolean isPiglinCurrency(ItemStack itemStack);
 }

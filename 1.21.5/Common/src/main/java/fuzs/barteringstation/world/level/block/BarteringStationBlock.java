@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -55,19 +54,8 @@ public class BarteringStationBlock extends BaseEntityBlock implements TickingEnt
     }
 
     @Override
-    public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState newState, boolean movedByPiston) {
-        if (!blockState.is(newState.getBlock())) {
-            BlockEntity blockentity = level.getBlockEntity(blockPos);
-            if (blockentity instanceof BarteringStationBlockEntity) {
-                if (level instanceof ServerLevel) {
-                    Containers.dropContents(level, blockPos, (BarteringStationBlockEntity)blockentity);
-                }
-
-                level.updateNeighbourForOutputSignal(blockPos, this);
-            }
-
-            super.onRemove(blockState, level, blockPos, newState, movedByPiston);
-        }
+    protected void affectNeighborsAfterRemoval(BlockState blockState, ServerLevel serverLevel, BlockPos blockPos, boolean bl) {
+        Containers.updateNeighboursAfterDestroy(blockState, serverLevel, blockPos);
     }
 
     @Override
