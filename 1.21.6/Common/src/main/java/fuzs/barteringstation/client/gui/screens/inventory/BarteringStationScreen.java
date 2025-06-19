@@ -1,6 +1,5 @@
 package fuzs.barteringstation.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
@@ -9,7 +8,7 @@ import fuzs.puzzleslib.api.client.gui.v2.ScreenHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -57,14 +56,13 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         this.renderTooltip(guiGraphics, mouseX, mouseY);
         if (ScreenHelper.isHovering(this.leftPos + 53, this.topPos + 20, 16, 16, mouseX, mouseY)) {
             Component component = getFullPiglinComponent(this.menu.getNearbyPiglins());
-            guiGraphics.renderTooltip(this.font, component, mouseX, mouseY);
+            guiGraphics.setTooltipForNextFrame(this.font, component, mouseX, mouseY);
         }
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        guiGraphics.blit(RenderType::guiTextured,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BARTERING_STATION_LOCATION,
                 this.leftPos,
                 this.topPos,
@@ -77,19 +75,16 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         if (BarteringStation.CONFIG.get(ClientConfig.class).cooldownRenderType.arrows()) {
             this.renderCooldownArrows(guiGraphics);
         }
-        guiGraphics.pose().pushPose();
         int posX = this.leftPos + 53;
         int posY = this.topPos + 20;
         guiGraphics.renderFakeItem(new ItemStack(Items.PIGLIN_HEAD), posX, posY);
         Component component = getPiglinComponent(this.menu.getNearbyPiglins());
-        guiGraphics.pose().translate(0.0F, 0.0F, 200.0F);
         guiGraphics.drawString(this.font, component, posX + 19 - 2 - this.font.width(component), posY + 6 + 3, -1);
-        guiGraphics.pose().popPose();
     }
 
     private void renderCooldownArrows(GuiGraphics guiGraphics) {
         int topArrowProgress = this.menu.getTopArrowProgress();
-        guiGraphics.blit(RenderType::guiTextured,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BARTERING_STATION_LOCATION,
                 this.leftPos + 49,
                 this.topPos + 40,
@@ -100,7 +95,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
                 256,
                 256);
         int bottomArrowProgress = this.menu.getBottomArrowProgress();
-        guiGraphics.blit(RenderType::guiTextured,
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BARTERING_STATION_LOCATION,
                 this.leftPos + 49 + ARROW_SIZE_X - bottomArrowProgress,
                 this.topPos + 53,
@@ -115,21 +110,21 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
     private void renderCooldownOverlays(GuiGraphics guiGraphics) {
         float cooldownProgress = this.menu.getCooldownProgress();
         if (cooldownProgress > 0.0F && cooldownProgress < 1.0F) {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(this.leftPos, this.topPos, 0.0);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(this.leftPos, this.topPos);
             for (int i = 0; i < BarteringStationBlockEntity.CURRENCY_SLOTS && i < this.menu.slots.size(); i++) {
                 Slot slot = this.menu.slots.get(i);
                 if (slot.isActive() && slot.hasItem()) {
                     int startY = Mth.floor(16.0F * (1.0F - cooldownProgress));
-                    guiGraphics.fill(RenderType.guiOverlay(),
+                    guiGraphics.fill(RenderPipelines.GUI,
                             slot.x,
                             slot.y + startY,
                             slot.x + 16,
                             slot.y + startY + Mth.ceil(16.0F * cooldownProgress),
-                            -2130706433);
+                            0X7FFFFFFF);
                 }
             }
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
     }
 }

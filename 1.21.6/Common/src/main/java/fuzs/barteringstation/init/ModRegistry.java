@@ -36,7 +36,7 @@ public class ModRegistry {
             .registerBlockEntityType("bartering_station", BarteringStationBlockEntity::new, BARTERING_STATION_BLOCK);
     public static final Holder.Reference<MenuType<BarteringStationMenu>> BARTERING_STATION_MENU_TYPE = REGISTRIES.registerMenuType(
             "bartering_station",
-            () -> BarteringStationMenu::new);
+            BarteringStationMenu::new);
 
     public static final DataAttachmentType<Entity, BlockPos> BARTERING_STATION_ATTACHMENT_TYPE = DataAttachmentRegistry.<BlockPos>entityBuilder()
             .persistent(BlockPos.CODEC)

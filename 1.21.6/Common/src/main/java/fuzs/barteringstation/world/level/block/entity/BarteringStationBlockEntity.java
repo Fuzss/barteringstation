@@ -7,18 +7,16 @@ import fuzs.barteringstation.services.CommonAbstractions;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.puzzleslib.api.block.v1.entity.TickingBlockEntity;
 import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
+import fuzs.puzzleslib.api.container.v1.ContainerSerializationHelper;
 import fuzs.puzzleslib.api.container.v1.ListBackedContainer;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -33,6 +31,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -93,19 +93,18 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.items.clear();
-        ContainerHelper.loadAllItems(tag, this.items, registries);
-        this.barterDelay = tag.getShortOr(TAG_DELAY, (short) 0);
+    protected void loadAdditional(ValueInput valueInput) {
+        super.loadAdditional(valueInput);
+        ContainerSerializationHelper.loadAllItems(valueInput, this.items);
+        this.barterDelay = valueInput.getShortOr(TAG_DELAY, (short) 0);
 
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ContainerHelper.saveAllItems(tag, this.items, registries);
-        tag.putShort(TAG_DELAY, (short) this.barterDelay);
+    protected void saveAdditional(ValueOutput valueOutput) {
+        super.saveAdditional(valueOutput);
+        ContainerSerializationHelper.saveAllItems(valueOutput, this.items);
+        valueOutput.putShort(TAG_DELAY, (short) this.barterDelay);
     }
 
     @Override
@@ -284,8 +283,9 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         this.setItem(targetSlot, stackToInsert);
     }
 
-    private boolean hasSpaceForItem(ItemStack stack1, ItemStack stack2) {
-        return !stack1.isEmpty() && ItemStack.isSameItemSameComponents(stack1, stack2) && stack1.isStackable() &&
-                stack1.getCount() < stack1.getMaxStackSize() && stack1.getCount() < this.getMaxStackSize();
+    private boolean hasSpaceForItem(ItemStack itemStack, ItemStack otherItemStack) {
+        return !itemStack.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, otherItemStack)
+                && itemStack.isStackable() && itemStack.getCount() < itemStack.getMaxStackSize()
+                && itemStack.getCount() < this.getMaxStackSize();
     }
 }
