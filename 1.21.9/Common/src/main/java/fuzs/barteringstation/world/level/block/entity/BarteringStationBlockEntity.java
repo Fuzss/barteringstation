@@ -56,7 +56,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         Arrays.setAll(arr, i -> i + CURRENCY_SLOTS);
     });
 
-    private final BarteringStationAnimationController animationController;
+    private final ItemStationAnimationController animationController;
     private final ContainerData dataAccess;
     private final NonNullList<ItemStack> items = NonNullList.withSize(ALL_SLOTS, ItemStack.EMPTY);
     private int barterDelay;
@@ -64,7 +64,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     public BarteringStationBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.value(), blockPos, blockState);
-        this.animationController = new BarteringStationAnimationController(blockPos);
+        this.animationController = new ItemStationAnimationController(blockPos);
         this.dataAccess = new ContainerData() {
 
             @Override
@@ -206,7 +206,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
                         BarteringStation.CONFIG.get(ServerConfig.class).barterDelay / 2);
     }
 
-    public BarteringStationAnimationController getAnimationController() {
+    public ItemStationAnimationController getAnimationController() {
         return this.animationController;
     }
 
