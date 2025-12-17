@@ -3,19 +3,19 @@ package fuzs.barteringstation.world.level.block.entity;
 import fuzs.barteringstation.BarteringStation;
 import fuzs.barteringstation.config.ServerConfig;
 import fuzs.barteringstation.init.ModRegistry;
-import fuzs.barteringstation.services.CommonAbstractions;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.puzzleslib.api.block.v1.entity.TickingBlockEntity;
 import fuzs.puzzleslib.api.container.v1.ContainerMenuHelper;
 import fuzs.puzzleslib.api.container.v1.ContainerSerializationHelper;
 import fuzs.puzzleslib.api.container.v1.ListBackedContainer;
-import net.minecraft.Util;
+import fuzs.puzzleslib.api.util.v1.EntityHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,6 +27,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,15 +46,17 @@ import java.util.function.IntUnaryOperator;
 public class BarteringStationBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, ListBackedContainer, TickingBlockEntity {
     public static final MutableComponent CONTAINER_BARTERING_STATION = Component.translatable(
             "container.bartering_station");
+    public static final int BARTER_DELAY_DATA_INDEX = 0;
+    public static final int NEARBY_PIGLINS_DATA_INDEX = 1;
     public static final String TAG_DELAY = BarteringStation.id("delay").toString();
     public static final int ALL_SLOTS = 21;
     public static final int CURRENCY_SLOTS = 6;
     public static final int DATA_SLOTS = 2;
-    private static final int[] SLOTS_FOR_INPUT = Util.make(new int[CURRENCY_SLOTS], arr -> {
-        Arrays.setAll(arr, IntUnaryOperator.identity());
+    public static final int[] SLOTS_FOR_INPUT = Util.make(new int[CURRENCY_SLOTS], (int[] array) -> {
+        Arrays.setAll(array, IntUnaryOperator.identity());
     });
-    private static final int[] SLOTS_FOR_OUTPUT = Util.make(new int[ALL_SLOTS - CURRENCY_SLOTS], arr -> {
-        Arrays.setAll(arr, i -> i + CURRENCY_SLOTS);
+    public static final int[] SLOTS_FOR_OUTPUT = Util.make(new int[ALL_SLOTS - CURRENCY_SLOTS], (int[] array) -> {
+        Arrays.setAll(array, (int i) -> i + CURRENCY_SLOTS);
     });
 
     private final ItemStationAnimationController animationController;
@@ -66,12 +69,11 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
         super(ModRegistry.BARTERING_STATION_BLOCK_ENTITY_TYPE.value(), blockPos, blockState);
         this.animationController = new ItemStationAnimationController(blockPos);
         this.dataAccess = new ContainerData() {
-
             @Override
             public int get(int id) {
                 return switch (id) {
-                    case 0 -> BarteringStationBlockEntity.this.getBarterDelay();
-                    case 1 -> BarteringStationBlockEntity.this.nearbyPiglins;
+                    case BARTER_DELAY_DATA_INDEX -> BarteringStationBlockEntity.this.getBarterDelay();
+                    case NEARBY_PIGLINS_DATA_INDEX -> BarteringStationBlockEntity.this.nearbyPiglins;
                     default -> throw new IndexOutOfBoundsException(id);
                 };
             }
@@ -124,7 +126,11 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     @Override
     protected AbstractContainerMenu createMenu(int id, Inventory inventory) {
-        return new BarteringStationMenu(id, inventory, this, this.dataAccess);
+        return new BarteringStationMenu(id,
+                inventory,
+                this,
+                this.dataAccess,
+                ContainerLevelAccess.create(this.getLevel(), this.getBlockPos()));
     }
 
     @Override
@@ -134,22 +140,25 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     @Override
     public void serverTick() {
-        if (this.barterDelay > 0) this.barterDelay--;
-        final int totalBarterDelay = BarteringStation.CONFIG.get(ServerConfig.class).barterDelay;
-        boolean tryPerformBarter = this.barterDelay % totalBarterDelay == 0;
+        if (this.barterDelay > 0) {
+            this.barterDelay--;
+        }
+
+        int totalBarterDelay = BarteringStation.CONFIG.get(ServerConfig.class).barterDelay;
+        boolean isTimeToBarter = this.barterDelay % totalBarterDelay == 0;
         // do this more often then handing out gold to update the piglin count in the client screen
-        if (tryPerformBarter || this.barterDelay % (totalBarterDelay / 4) == 0) {
+        if (isTimeToBarter || this.barterDelay % (totalBarterDelay / 4) == 0) {
             List<Piglin> piglins = findNearbyPiglins(this.getLevel(), this.getBlockPos());
             this.nearbyPiglins = piglins.size();
-            if (tryPerformBarter) {
+            if (isTimeToBarter) {
                 this.barterDelay = totalBarterDelay * 2;
                 this.barterWithPiglins(this.getBlockPos(), piglins);
             }
         }
     }
 
-    private static List<Piglin> findNearbyPiglins(Level level, BlockPos pos) {
-        Vec3 vec3 = Vec3.atCenterOf(pos);
+    public static List<Piglin> findNearbyPiglins(Level level, BlockPos blockPos) {
+        Vec3 vec3 = Vec3.atCenterOf(blockPos);
         int horizontalRange = BarteringStation.CONFIG.get(ServerConfig.class).horizontalRange;
         int verticalRange = BarteringStation.CONFIG.get(ServerConfig.class).verticalRange;
         return level.getEntitiesOfClass(Piglin.class,
@@ -183,6 +192,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
                 return OptionalInt.of(i);
             }
         }
+
         return OptionalInt.empty();
     }
 
@@ -195,6 +205,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             ModRegistry.BARTERING_STATION_ATTACHMENT_TYPE.set(piglin, blockPos);
             return true;
         }
+
         return false;
     }
 
@@ -237,7 +248,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
-        return index >= 0 && index < CURRENCY_SLOTS && CommonAbstractions.INSTANCE.isPiglinCurrency(stack);
+        return index >= 0 && index < CURRENCY_SLOTS && EntityHelper.isPiglinCurrency(stack);
     }
 
     public boolean placeBarterResponseItem(ItemStack stack) {
@@ -247,14 +258,17 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
                 if (slot.isEmpty()) {
                     slot = this.findFreeResponseSlot();
                 }
+
                 if (slot.isPresent()) {
                     this.mergeStackToSlot(stack, slot.getAsInt());
                     if (stack.isEmpty()) {
                         return true;
                     }
+
                     continue;
                 }
             }
+
             return false;
         }
     }
@@ -265,6 +279,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
                 return OptionalInt.of(i);
             }
         }
+
         return OptionalInt.empty();
     }
 
@@ -280,6 +295,7 @@ public class BarteringStationBlockEntity extends BaseContainerBlockEntity implem
             stackToInsert.grow(transferAmount);
             stackToMerge.shrink(transferAmount);
         }
+
         this.setItem(targetSlot, stackToInsert);
     }
 

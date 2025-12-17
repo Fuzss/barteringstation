@@ -1,16 +1,18 @@
 package fuzs.barteringstation.client.gui.screens.inventory;
 
 import fuzs.barteringstation.BarteringStation;
+import fuzs.barteringstation.client.gui.components.ItemStackDisplayButton;
 import fuzs.barteringstation.config.ClientConfig;
 import fuzs.barteringstation.world.inventory.BarteringStationMenu;
 import fuzs.barteringstation.world.level.block.entity.BarteringStationBlockEntity;
-import fuzs.puzzleslib.api.client.gui.v2.ScreenHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,8 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class BarteringStationScreen extends AbstractContainerScreen<BarteringStationMenu> {
-    public static final String KEY_NEARBY_PIGLINS = "gui.barteringstation.bartering_station.piglins";
-    public static final ResourceLocation BARTERING_STATION_LOCATION = BarteringStation.id(
+    public static final Identifier BARTERING_STATION_LOCATION = BarteringStation.id(
             "textures/gui/container/bartering_station.png");
     public static final int ARROW_SIZE_X = 24;
     public static final int ARROW_SIZE_Y = 18;
@@ -29,39 +30,52 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         super(menu, inventory, title);
     }
 
-    private static Component getPiglinComponent(int nearbyPiglins) {
-        return Component.literal(String.valueOf(nearbyPiglins))
-                .withStyle(nearbyPiglins > 0 ? ChatFormatting.GOLD : ChatFormatting.RED);
-    }
-
-    private static Component getFullPiglinComponent(int nearbyPiglins) {
-        return Component.translatable(KEY_NEARBY_PIGLINS,
-                        Component.literal(String.valueOf(nearbyPiglins)),
-                        Component.empty().append(EntityType.PIGLIN.getDescription()).withStyle(ChatFormatting.WHITE))
-                .withStyle(nearbyPiglins > 0 ? ChatFormatting.GOLD : ChatFormatting.RED);
-    }
-
     @Override
     protected void init() {
         super.init();
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
+        this.addRenderableWidget(new ItemStackDisplayButton(this.leftPos + 53,
+                this.topPos + 20,
+                this.font,
+                new ItemStack(Items.PIGLIN_HEAD),
+                (Button button) -> {
+                    if (this.menu.clickMenuButton(this.minecraft.player, 0)) {
+                        this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
+                        this.onClose();
+                    }
+                }) {
+            @Override
+            public Component getMessage() {
+                int nearbyPiglins = BarteringStationScreen.this.menu.getNearbyPiglins();
+                return Component.literal(String.valueOf(nearbyPiglins))
+                        .withStyle(nearbyPiglins > 0 ? ChatFormatting.WHITE : ChatFormatting.RED);
+            }
+
+            @Override
+            public void setMessage(Component message) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                this.active = BarteringStationScreen.this.menu.getNearbyPiglins() > 0;
+                super.renderContents(guiGraphics, mouseX, mouseY, partialTick);
+            }
+        }).setTooltip(Tooltip.create(EntityType.PIGLIN.getDescription()));
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
         if (BarteringStation.CONFIG.get(ClientConfig.class).cooldownRenderType.overlay()) {
             this.renderCooldownOverlays(guiGraphics);
         }
+
         this.renderTooltip(guiGraphics, mouseX, mouseY);
-        if (ScreenHelper.isHovering(this.leftPos + 53, this.topPos + 20, 16, 16, mouseX, mouseY)) {
-            Component component = getFullPiglinComponent(this.menu.getNearbyPiglins());
-            guiGraphics.setTooltipForNextFrame(this.font, component, mouseX, mouseY);
-        }
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
                 BARTERING_STATION_LOCATION,
                 this.leftPos,
@@ -75,11 +89,6 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
         if (BarteringStation.CONFIG.get(ClientConfig.class).cooldownRenderType.arrows()) {
             this.renderCooldownArrows(guiGraphics);
         }
-        int posX = this.leftPos + 53;
-        int posY = this.topPos + 20;
-        guiGraphics.renderFakeItem(new ItemStack(Items.PIGLIN_HEAD), posX, posY);
-        Component component = getPiglinComponent(this.menu.getNearbyPiglins());
-        guiGraphics.drawString(this.font, component, posX + 19 - 2 - this.font.width(component), posY + 6 + 3, -1);
     }
 
     private void renderCooldownArrows(GuiGraphics guiGraphics) {
@@ -124,6 +133,7 @@ public class BarteringStationScreen extends AbstractContainerScreen<BarteringSta
                             0X7FFFFFFF);
                 }
             }
+
             guiGraphics.pose().popMatrix();
         }
     }

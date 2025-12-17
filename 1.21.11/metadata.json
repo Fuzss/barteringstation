@@ -1,0 +1,61 @@
+{
+    "mod": {
+        "id": "barteringstation",
+        "group": "fuzs.barteringstation",
+        "name": "Bartering Station",
+        "version": "21.11.0",
+        "authors": [
+            "Fuzs"
+        ],
+        "description": "Still running around bartering manually? Let's put those lazy piglins to work instead!",
+        "license": "MPL-2.0"
+    },
+    "dependencies": [
+        {
+            "name": "fabricapi",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "forgeconfigapiport",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "puzzleslib",
+            "type": "required",
+            "platforms": [
+                "fabric",
+                "neoforge"
+            ]
+        }
+    ],
+    "links": [
+        {
+            "name": "github",
+            "slug": "barteringstation"
+        },
+        {
+            "name": "curseforge",
+            "slug": "bartering-station",
+            "id": "666940"
+        },
+        {
+            "name": "modrinth",
+            "slug": "bartering-station",
+            "id": "EOig9U0j"
+        }
+    ],
+    "environments": {
+        "client": "required",
+        "server": "required"
+    },
+    "platforms": [
+        "fabric",
+        "neoforge"
+    ]
+}
